@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- macOS 15+ asks before an app talks to devices on the local network. -->
+  <key>NSLocalNetworkUsageDescription</key>
+  <string>Ropeway finds computers and phones on your network and exchanges messages, files and screens with them.</string>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Ropeway sends your microphone with a shared screen when you choose to.</string>
+</dict>
+</plist>

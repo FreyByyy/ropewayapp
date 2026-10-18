@@ -1,0 +1,480 @@
+/* Neumorphism: one soft material. Panels are pushed out of the background,
+   pressed things sink into it. Color is kept for text and icons. */
+
+[data-base="neu"] {
+  --send-h: 40px;
+  --ease-emph: cubic-bezier(0.34, 1.3, 0.64, 1);
+  --ease-out: cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+[data-base="neu"] body {
+  background: var(--bg);
+}
+
+[data-base="neu"] :is(.btn, .nav-item, .tool, .foot-btn, .send, .icon-btn, .segmented button, .source, .rail-item, .swatch, .theme-pick, .accent-chip, .pick-row) {
+  transition:
+    box-shadow var(--t-med) var(--ease-out),
+    color var(--t-fast),
+    transform var(--t-fast) var(--ease-out);
+}
+
+/* ---- the two raised panels ---- */
+
+[data-base="neu"] .sidebar,
+[data-base="neu"] .main {
+  background: var(--bg);
+  border: 0;
+  border-radius: var(--r-lg);
+  box-shadow: var(--neu-out);
+}
+
+[data-base="neu"] .sidebar {
+  padding: 18px 14px 14px;
+}
+
+[data-base="neu"] .main {
+  overflow: hidden;
+}
+
+[data-base="neu"] .brand-name {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* ---- navigation: raised on hover, pressed in when chosen ---- */
+
+[data-base="neu"] .nav-item {
+  padding: 9px 12px;
+  border-radius: var(--r-md);
+  margin: 2px 0;
+}
+
+[data-base="neu"] .nav-item:hover {
+  background: transparent;
+  box-shadow: var(--neu-out-sm);
+}
+
+[data-base="neu"] .nav-item.active,
+[data-base="neu"] .nav-item:active {
+  background: transparent;
+  box-shadow: var(--neu-in);
+}
+
+[data-base="neu"] .nav-item.active .nav-title {
+  color: var(--accent);
+}
+
+[data-base="neu"] .nav-icon,
+[data-base="neu"] .nav-icon.folder {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--accent);
+  box-shadow: var(--neu-out-sm);
+}
+
+[data-base="neu"] .nav-item.active .nav-icon {
+  box-shadow: var(--neu-in-sm);
+}
+
+[data-base="neu"] .nav-title {
+  font-weight: 700;
+}
+
+[data-base="neu"] .avatar {
+  box-shadow: var(--neu-out-sm);
+}
+
+[data-base="neu"] .presence {
+  border-color: var(--bg);
+}
+
+[data-base="neu"] .section-head {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+[data-base="neu"] .badge {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--neu-out-sm);
+}
+
+[data-base="neu"] .sidebar-foot {
+  border-top: 0;
+  gap: 10px;
+}
+
+[data-base="neu"] .foot-btn {
+  border-radius: var(--r-md);
+  box-shadow: var(--neu-out-sm);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+[data-base="neu"] .foot-btn:hover {
+  background: transparent;
+  color: var(--accent);
+}
+
+[data-base="neu"] .foot-btn:active,
+[data-base="neu"] .foot-btn.active {
+  background: transparent;
+  box-shadow: var(--neu-in-sm);
+}
+
+/* ---- content ---- */
+
+[data-base="neu"] .chat-head,
+[data-base="neu"] .settings-head {
+  background: transparent;
+  border-bottom: 0;
+  min-height: 72px;
+  padding: 14px 22px;
+}
+
+[data-base="neu"] .head-text h1,
+[data-base="neu"] .settings-head h1 {
+  font-weight: 800;
+  font-size: 18px;
+}
+
+[data-base="neu"] .head-icon {
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--accent);
+  box-shadow: var(--neu-out-sm);
+}
+
+[data-base="neu"] .tool {
+  border-radius: var(--r-md);
+  color: var(--muted);
+  font-weight: 700;
+}
+
+[data-base="neu"] .tool:not(:disabled):hover {
+  background: transparent;
+  color: var(--accent);
+  box-shadow: var(--neu-out-sm);
+}
+
+[data-base="neu"] .tool:not(:disabled):active,
+[data-base="neu"] .tool.pressed,
+[data-base="neu"] .tool.trust.on {
+  background: transparent;
+  color: var(--accent);
+  box-shadow: var(--neu-in-sm);
+}
+
+[data-base="neu"] .day {
+  border: 0;
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+}
+
+/* Incoming messages stand out; your own are pressed in. */
+[data-base="neu"] .row .bubble {
+  border-radius: var(--r-lg);
+  background: var(--bg);
+  color: var(--text);
+}
+
+[data-base="neu"] .row.in .bubble {
+  box-shadow: var(--neu-out-sm);
+}
+
+[data-base="neu"] .row.out .bubble {
+  box-shadow: var(--neu-in-sm);
+  color: var(--text);
+}
+
+[data-base="neu"] .row.out .bubble .meta {
+  color: var(--accent);
+  opacity: 0.9;
+}
+
+[data-base="neu"] .transfer {
+  background: var(--bg);
+  border: 0;
+  border-radius: var(--r-lg);
+  box-shadow: var(--neu-out-sm);
+}
+
+[data-base="neu"] .transfer-icon {
+  background: var(--bg);
+  border-radius: 50%;
+  box-shadow: var(--neu-in-sm);
+}
+
+[data-base="neu"] .progress {
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  height: 7px;
+}
+
+[data-base="neu"] .composer {
+  border: 0;
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: var(--neu-in);
+  padding: 7px 7px 7px 20px;
+}
+
+[data-base="neu"] .composer:focus-within {
+  border: 0;
+}
+
+[data-base="neu"] .send {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  background: var(--bg);
+  color: var(--accent);
+  box-shadow: var(--neu-out-sm);
+}
+
+[data-base="neu"] .send:not(:disabled):hover {
+  background: var(--bg);
+}
+
+[data-base="neu"] .send:not(:disabled):active {
+  box-shadow: var(--neu-in-sm);
+  transform: scale(0.96);
+}
+
+/* ---- controls ---- */
+
+[data-base="neu"] .btn {
+  border-radius: var(--r-md);
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 700;
+  box-shadow: var(--neu-out-sm);
+}
+
+[data-base="neu"] .btn.primary {
+  background: var(--bg);
+  color: var(--accent);
+}
+
+[data-base="neu"] .btn.primary:not(:disabled):hover {
+  background: var(--bg);
+}
+
+[data-base="neu"] .btn.danger {
+  background: var(--bg);
+  color: var(--danger);
+}
+
+[data-base="neu"] .btn:not(:disabled):active {
+  box-shadow: var(--neu-in-sm);
+  transform: scale(0.98);
+}
+
+[data-base="neu"] .btn:disabled {
+  box-shadow: none;
+}
+
+[data-base="neu"] .card {
+  background: var(--bg);
+  border: 0;
+  border-radius: var(--r-lg);
+  box-shadow: var(--neu-out);
+}
+
+[data-base="neu"] .segmented {
+  border: 0;
+  border-radius: var(--r-md);
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+  padding: 4px;
+}
+
+[data-base="neu"] .segmented button {
+  border-radius: calc(var(--r-md) - 3px);
+  font-weight: 700;
+}
+
+[data-base="neu"] .segmented button.on {
+  background: var(--bg);
+  color: var(--accent);
+  box-shadow: var(--neu-out-sm);
+}
+
+[data-base="neu"] .switch {
+  width: 48px;
+  height: 26px;
+}
+
+[data-base="neu"] .switch span {
+  border-radius: 13px;
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+}
+
+[data-base="neu"] .switch span::after {
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: var(--bg);
+  box-shadow: var(--neu-out-sm);
+  transition: transform var(--t-med) var(--ease-emph);
+}
+
+[data-base="neu"] .switch input:checked + span {
+  background: color-mix(in oklab, var(--accent) 30%, var(--bg));
+}
+
+[data-base="neu"] .switch input:checked + span::after {
+  transform: translateX(22px);
+}
+
+[data-base="neu"] .inline-form input,
+[data-base="neu"] .wide-input,
+[data-base="neu"] .ed-field :is(input:not([type]), textarea),
+[data-base="neu"] .color-pair input:not([type="color"]) {
+  border: 0;
+  border-radius: var(--r-md);
+  background: var(--bg);
+  box-shadow: var(--neu-in-sm);
+}
+
+[data-base="neu"] .overlay {
+  background: color-mix(in oklab, var(--bg) 55%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+[data-base="neu"] .modal {
+  border: 0;
+  border-radius: var(--r-lg);
+  background: var(--bg);
+  box-shadow: var(--shadow-lg);
+}
+
+[data-base="neu"] .menu {
+  border: 0;
+  border-radius: var(--r-md);
+  background: var(--bg);
+  box-shadow: var(--neu-out);
+}
+
+[data-base="neu"] .screen-bar {
+  background: transparent;
+  gap: 8px;
+  padding: 12px 16px 0;
+  border: 0;
+}
+
+[data-base="neu"] .sb-row {
+  border-radius: var(--r-md);
+  background: var(--bg) !important;
+  box-shadow: var(--neu-out-sm);
+}
+
+[data-base="neu"] .sb-row.sharing {
+  color: var(--danger);
+}
+
+[data-base="neu"] .browser,
+[data-base="neu"] .requests {
+  background: var(--bg);
+  border: 0;
+  border-radius: var(--r-lg);
+  box-shadow: var(--neu-out-sm);
+}
+
+[data-base="neu"] .source {
+  border: 0;
+  background: var(--bg);
+  box-shadow: var(--neu-out-sm);
+}
+
+[data-base="neu"] .source.on {
+  box-shadow: var(--neu-in-sm);
+  color: var(--accent);
+}
+
+[data-base="neu"] .theme-pick:hover {
+  background: transparent;
+  box-shadow: var(--neu-out-sm);
+}
+
+[data-base="neu"] .theme-card.on .theme-pick {
+  border-color: transparent;
+  box-shadow: var(--neu-in);
+}
+
+[data-base="neu"] .drawer {
+  background: var(--bg);
+  border-left: 0;
+}
+
+[data-base="neu"] ::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, var(--muted) 45%, transparent);
+}
+
+/* ---- contrast: sunken things darker, raised controls lighter ---- */
+
+[data-base="neu"] :is(.composer, .segmented, .switch span, .day, .progress, .transfer-icon,
+  .inline-form input, .wide-input, .ed-field input:not([type]), .ed-field textarea),
+[data-base="neu"] :is(.nav-item.active, .theme-card.on .theme-pick) {
+  background: var(--neu-sunk);
+}
+
+[data-base="neu"] :is(.btn, .send, .foot-btn, .nav-icon, .head-icon, .segmented button.on, .source) {
+  background: var(--neu-raised);
+}
+
+[data-base="neu"] .switch span::after {
+  background: var(--neu-raised);
+}
+
+[data-base="neu"] :is(.btn, .send, .foot-btn, .segmented button.on, .source):not(:active):not(.active):not(.on) {
+  border: 1px solid var(--neu-stroke);
+}
+
+[data-base="neu"] .btn.primary:not(:disabled):hover,
+[data-base="neu"] .send:not(:disabled):hover {
+  background: var(--neu-raised);
+}
+
+[data-base="neu"] .btn:not(:disabled):active,
+[data-base="neu"] .send:not(:disabled):active,
+[data-base="neu"] .foot-btn:active,
+[data-base="neu"] .foot-btn.active {
+  background: var(--neu-sunk);
+}
+
+/* Dropdowns: raised with an outline, pressed in while open. */
+[data-base="neu"] select {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in oklab, var(--text) 16%, transparent);
+  border-radius: var(--r-md);
+  background-color: var(--neu-raised);
+  color: var(--text);
+  box-shadow: var(--neu-out-sm);
+  transition: box-shadow var(--t-med) var(--ease-out);
+}
+
+[data-base="neu"] select:hover {
+  border-color: color-mix(in oklab, var(--accent) 45%, transparent);
+}
+
+[data-base="neu"] select:focus,
+[data-base="neu"] select:active {
+  outline: none;
+  border-color: var(--accent);
+  background-color: var(--neu-sunk);
+  box-shadow: var(--neu-in-sm);
+}
+
+[data-base="neu"] select option {
+  background: var(--bg);
+  color: var(--text);
+}

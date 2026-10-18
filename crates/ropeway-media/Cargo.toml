@@ -1,0 +1,44 @@
+﻿[package]
+name = "ropeway-media"
+description = "Screen and audio capture plus encoding for Ropeway screen sharing"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow = "1"
+arboard = "3"
+cpal = "0.18"
+openh264 = "0.9"
+openh264-sys2 = "0.9"
+ropeway-core = { path = "../ropeway-core" }
+serde = { version = "1", features = ["derive"] }
+tracing = "0.1"
+yuv = "0.8"
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Gdi",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_WindowsAndMessaging",
+] }
+windows-capture = "2"
+
+# Linux: X11 capture and input directly; Wayland through the desktop portal
+# (screen cast + remote desktop) with frames over PipeWire.
+[target.'cfg(target_os = "linux")'.dependencies]
+# async-io, as the rest of the app's D-Bus users (notifications) use: one
+# zbus executor for everything.
+ashpd = { version = "0.13", default-features = false, features = ["async-io", "screencast", "remote_desktop"] }
+async-io = "2"
+libc = "0.2"
+pipewire = "0.10"
+tokio = { version = "1", features = ["sync"] }
+x11rb = { version = "0.14", features = ["shm", "randr", "xtest", "xfixes"] }
+
+# macOS: ScreenCaptureKit for the screen, Core Graphics events for input.
+[target.'cfg(target_os = "macos")'.dependencies]
+core-foundation = "0.10"
+core-graphics = { version = "0.25", features = ["highsierra"] }
+screencapturekit = "11"

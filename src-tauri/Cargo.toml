@@ -1,0 +1,46 @@
+[package]
+name = "ropeway"
+description = "Ropeway — LAN chat, files, screen sharing and remote control"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "ropeway_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+ropeway-core = { path = "../crates/ropeway-core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-notification = "2"
+tokio = { version = "1", features = ["sync"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.56"
+windows-sys = { version = "0.61", features = ["Win32_System_Console"] }
+
+# Desktop: screen capture and input, tray, autostart, one instance.
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+ropeway-media = { path = "../crates/ropeway-media" }
+tauri-plugin-autostart = "2"
+tauri-plugin-single-instance = "2"
+# Terminal commands (`ropeway status`, `ropeway send` …) and `ropeway daemon`.
+anyhow = "1"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+dirs = "7"
+ring = "0.17"
+tokio = { version = "1", features = ["rt-multi-thread", "net", "io-util", "macros", "signal", "sync"] }
+
+# Android: the Kotlin side (screen capture, files, network) is reached over JNI.
+[target.'cfg(target_os = "android")'.dependencies]
+anyhow = "1"
+jni = "0.21"

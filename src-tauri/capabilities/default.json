@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Main window and screen viewer windows",
+  "windows": ["main", "viewer-*", "control-indicator"],
+  "permissions": ["core:default", "core:window:allow-set-title", "core:window:allow-start-dragging", "dialog:allow-open", "dialog:allow-save", "core:window:allow-set-theme"]
+}

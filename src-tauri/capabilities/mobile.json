@@ -1,0 +1,8 @@
+{
+  "$schema": "../gen/schemas/mobile-schema.json",
+  "identifier": "mobile",
+  "description": "Phone: listening for notification taps",
+  "platforms": ["android", "iOS"],
+  "windows": ["main"],
+  "permissions": ["notification:allow-register-listener", "notification:allow-remove-listener"]
+}

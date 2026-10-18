@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">"Ropeway"</string>
+    <string name="main_activity_title">"Ropeway"</string>
+    <string name="capture_channel">Screen sharing</string>
+    <string name="capture_title">Your screen is being shared</string>
+    <string name="capture_text">Other devices on your network can see this screen.</string>
+    <string name="capture_stop">Stop</string>
+    <string name="files_title">Access to files</string>
+    <string name="files_text">Ropeway saves received files to Download/Ropeway and keeps the shared folder in Documents/Ropeway Shared. Allow access to all files to use them.</string>
+    <string name="files_allow">Allow</string>
+    <string name="files_later">Later</string>
+    <string name="control_label">Ropeway remote control</string>
+    <string name="control_summary">Lets a computer you allow tap, swipe and type on this phone.</string>
+    <string name="control_description">Ropeway uses this service only while you let a computer on your network control this phone: it performs the taps, swipes, text input and Back / Home presses sent from that computer. Nothing is read or sent otherwise.</string>
+</resources>

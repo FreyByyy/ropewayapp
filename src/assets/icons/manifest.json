@@ -1,0 +1,815 @@
+{
+  "source": "https://icons8.com",
+  "icons": {
+    "fluent": {
+      "general": {
+        "id": "VD4ra88PocFa",
+        "name": "group-foreground-selected",
+        "platform": "fluent-systems-regular"
+      },
+      "chat": {
+        "id": "RXH0x5wZrq5V",
+        "name": "chat--v2",
+        "platform": "fluent-systems-regular"
+      },
+      "folder": {
+        "id": "FVQqbNWLzhcc",
+        "name": "folder-invoices",
+        "platform": "fluent-systems-regular"
+      },
+      "settings": {
+        "id": "cHO6jgTabrg7",
+        "name": "settings--v2",
+        "platform": "fluent-systems-regular"
+      },
+      "plus": {
+        "id": "354k6pS0PoMI",
+        "name": "plus-math",
+        "platform": "fluent-systems-regular"
+      },
+      "radar": {
+        "id": "TWHAHXkmkpJW",
+        "name": "radar",
+        "platform": "fluent-systems-regular"
+      },
+      "send": {
+        "id": "BuvFUiY8U7Hj",
+        "name": "sent--v2",
+        "platform": "fluent-systems-regular"
+      },
+      "check": {
+        "id": "VfY8rwjNJSAQ",
+        "name": null,
+        "platform": "fluent-systems-regular"
+      },
+      "clock": {
+        "id": "oXYDxqXpVXmM",
+        "name": "clock--v4",
+        "platform": "fluent-systems-regular"
+      },
+      "alert": {
+        "id": "sWOXMMdMXpBD",
+        "name": "error",
+        "platform": "fluent-systems-regular"
+      },
+      "file": {
+        "id": "jM97zjbpG515",
+        "name": "file",
+        "platform": "fluent-systems-regular"
+      },
+      "cast": {
+        "id": "QCITqAFm3w51",
+        "name": "present-to-all",
+        "platform": "fluent-systems-regular"
+      },
+      "pointer": {
+        "id": "7YsfG2459rle",
+        "name": "cursor",
+        "platform": "fluent-systems-regular"
+      },
+      "shield": {
+        "id": "vy6OvJYHSJ8I",
+        "name": "shield",
+        "platform": "fluent-systems-regular"
+      },
+      "shield-check": {
+        "id": "bfwHrORtPSpB",
+        "name": null,
+        "platform": "fluent-systems-regular"
+      },
+      "close": {
+        "id": "IyF52aJ6ROno",
+        "name": "multiply",
+        "platform": "fluent-systems-regular"
+      },
+      "download": {
+        "id": "sXUnPq4XYR1D",
+        "name": "download",
+        "platform": "fluent-systems-regular"
+      },
+      "upload": {
+        "id": "tWt9XCfjK1WM",
+        "name": "upload",
+        "platform": "fluent-systems-regular"
+      },
+      "pencil": {
+        "id": "zqRKVWtC1VeY",
+        "name": "create-new",
+        "platform": "fluent-systems-regular"
+      },
+      "trash": {
+        "id": "nerFBdXcYDve",
+        "name": "trash",
+        "platform": "fluent-systems-regular"
+      },
+      "external": {
+        "id": "hUqP035cA2Bd",
+        "name": "external-link",
+        "platform": "fluent-systems-regular"
+      },
+      "chevron-right": {
+        "id": "sIwF7z9JHxkN",
+        "name": "forward--v3",
+        "platform": "fluent-systems-regular"
+      },
+      "refresh": {
+        "id": "dUT1e6ccW1yv",
+        "name": "refresh",
+        "platform": "fluent-systems-regular"
+      },
+      "monitor": {
+        "id": "VccM9me26DSH",
+        "name": "monitor",
+        "platform": "fluent-systems-regular"
+      },
+      "menu": {
+        "id": "quuyJoZCkYni",
+        "name": "menu",
+        "platform": "fluent-systems-regular"
+      },
+      "palette": {
+        "id": "tm4O6Iwam3az",
+        "name": "paint-palette",
+        "platform": "fluent-systems-regular"
+      },
+      "laptop": {
+        "id": "hB11OMkMtUCY",
+        "name": "laptop",
+        "platform": "fluent-systems-regular"
+      },
+      "sun": {
+        "id": "JHsm5oZeWqae",
+        "name": "sun",
+        "platform": "fluent-systems-regular"
+      },
+      "moon": {
+        "id": "xlD3xOrQjTJO",
+        "name": "crescent-moon",
+        "platform": "fluent-systems-regular"
+      },
+      "speaker": {
+        "id": "aly31hIgVdwr",
+        "name": "speaker",
+        "platform": "fluent-systems-regular"
+      },
+      "mute": {
+        "id": "R7hT1LS48SSp",
+        "name": "mute",
+        "platform": "fluent-systems-regular"
+      },
+      "smile": {
+        "id": "mtbYdY57rolj",
+        "name": "happy",
+        "platform": "fluent-systems-regular"
+      }
+    },
+    "material": {
+      "general": {
+        "id": "87221",
+        "name": "user-group-man-woman",
+        "platform": "m_rounded"
+      },
+      "chat": {
+        "id": "85491",
+        "name": "chat",
+        "platform": "m_rounded"
+      },
+      "folder": {
+        "id": "83172",
+        "name": "folder-invoices",
+        "platform": "m_rounded"
+      },
+      "settings": {
+        "id": "83214",
+        "name": "settings",
+        "platform": "m_rounded"
+      },
+      "plus": {
+        "id": "95779",
+        "name": "plus-math",
+        "platform": "m_rounded"
+      },
+      "radar": {
+        "id": "85509",
+        "name": null,
+        "platform": "m_rounded"
+      },
+      "send": {
+        "id": "85971",
+        "name": "sent",
+        "platform": "m_rounded"
+      },
+      "check": {
+        "id": "83145",
+        "name": null,
+        "platform": "m_rounded"
+      },
+      "clock": {
+        "id": "83147",
+        "name": "clock",
+        "platform": "m_rounded"
+      },
+      "alert": {
+        "id": "83164",
+        "name": "error",
+        "platform": "m_rounded"
+      },
+      "file": {
+        "id": "82938",
+        "name": "file",
+        "platform": "m_rounded"
+      },
+      "cast": {
+        "id": "90113",
+        "name": "present-to-all",
+        "platform": "m_rounded"
+      },
+      "pointer": {
+        "id": "83150",
+        "name": "cursor",
+        "platform": "m_rounded"
+      },
+      "shield": {
+        "id": "87404",
+        "name": "shield",
+        "platform": "m_rounded"
+      },
+      "shield-check": {
+        "id": "85804",
+        "name": null,
+        "platform": "m_rounded"
+      },
+      "close": {
+        "id": "95771",
+        "name": "multiply",
+        "platform": "m_rounded"
+      },
+      "download": {
+        "id": "83159",
+        "name": "download",
+        "platform": "m_rounded"
+      },
+      "upload": {
+        "id": "83225",
+        "name": "upload",
+        "platform": "m_rounded"
+      },
+      "pencil": {
+        "id": "86725",
+        "name": "create-new",
+        "platform": "m_rounded"
+      },
+      "trash": {
+        "id": "85194",
+        "name": "trash",
+        "platform": "m_rounded"
+      },
+      "external": {
+        "id": "83168",
+        "name": "external-link",
+        "platform": "m_rounded"
+      },
+      "chevron-right": {
+        "id": "86520",
+        "name": "forward",
+        "platform": "m_rounded"
+      },
+      "refresh": {
+        "id": "85505",
+        "name": "refresh",
+        "platform": "m_rounded"
+      },
+      "monitor": {
+        "id": "85497",
+        "name": "monitor",
+        "platform": "m_rounded"
+      },
+      "menu": {
+        "id": "4PLJFiJTdFTW",
+        "name": "menu--v3",
+        "platform": "m_rounded"
+      },
+      "palette": {
+        "id": "86317",
+        "name": "paint-palette",
+        "platform": "m_rounded"
+      },
+      "laptop": {
+        "id": "85793",
+        "name": "laptop",
+        "platform": "m_rounded"
+      },
+      "sun": {
+        "id": "83221",
+        "name": "sun",
+        "platform": "m_rounded"
+      },
+      "moon": {
+        "id": "96233",
+        "name": "do-not-disturb-2",
+        "platform": "m_rounded"
+      },
+      "speaker": {
+        "id": "87092",
+        "name": "speaker",
+        "platform": "m_rounded"
+      },
+      "mute": {
+        "id": "102034",
+        "name": "mute",
+        "platform": "m_rounded"
+      },
+      "smile": {
+        "id": "95335",
+        "name": "smiling",
+        "platform": "m_rounded"
+      }
+    },
+    "puffy": {
+      "general": {
+        "id": "biaw3omQSc1o",
+        "name": "conference-call",
+        "platform": "puffy"
+      },
+      "chat": {
+        "id": "Z8pPm6xPETVy",
+        "name": "chat",
+        "platform": "puffy"
+      },
+      "folder": {
+        "id": "3RwEt1opTRzC",
+        "name": "folder-invoices",
+        "platform": "puffy"
+      },
+      "settings": {
+        "id": "UCX4DI82AU0H",
+        "name": "settings",
+        "platform": "puffy"
+      },
+      "plus": {
+        "id": "DcsOezeH3xZF",
+        "name": null,
+        "platform": "puffy"
+      },
+      "radar": {
+        "id": "nu1kAaBAozFU",
+        "name": null,
+        "platform": "puffy"
+      },
+      "send": {
+        "id": "TbpCBFVQVHZA",
+        "name": "sent",
+        "platform": "puffy"
+      },
+      "check": {
+        "id": "0AUe0fpTPlTW",
+        "name": null,
+        "platform": "puffy"
+      },
+      "clock": {
+        "id": "stui8g7WwpIY",
+        "name": "clock",
+        "platform": "puffy"
+      },
+      "alert": {
+        "id": "2oJEeGdl4J26",
+        "name": "error",
+        "platform": "puffy"
+      },
+      "file": {
+        "id": "8idZc6CTLMhJ",
+        "name": "file",
+        "platform": "puffy"
+      },
+      "cast": {
+        "id": "IXsYFW96PRXP",
+        "name": null,
+        "platform": "puffy"
+      },
+      "pointer": {
+        "id": "Xxdb8I27Uh03",
+        "name": "cursor",
+        "platform": "puffy"
+      },
+      "shield": {
+        "id": "gqxV3LLnChNs",
+        "name": "shield",
+        "platform": "puffy"
+      },
+      "shield-check": {
+        "id": "JWkambf71CS5",
+        "name": null,
+        "platform": "puffy"
+      },
+      "close": {
+        "id": "mzYPuq34EbXZ",
+        "name": "multiply",
+        "platform": "puffy"
+      },
+      "download": {
+        "id": "SFy54FeVmNHv",
+        "name": "download",
+        "platform": "puffy"
+      },
+      "upload": {
+        "id": "P1fO9DPssXdj",
+        "name": "upload",
+        "platform": "puffy"
+      },
+      "pencil": {
+        "id": "Wyndx3rk1dCv",
+        "name": "create-new",
+        "platform": "puffy"
+      },
+      "trash": {
+        "id": "rDb7cZVzlTh5",
+        "name": "trash",
+        "platform": "puffy"
+      },
+      "external": {
+        "id": "9elMWTdiH9rS",
+        "name": "external-link",
+        "platform": "puffy"
+      },
+      "chevron-right": {
+        "id": "qtV6ntZgUPzD",
+        "name": "forward",
+        "platform": "puffy"
+      },
+      "refresh": {
+        "id": "r0XurXzSVmyi",
+        "name": "refresh",
+        "platform": "puffy"
+      },
+      "monitor": {
+        "id": "oFxKaxFbafkT",
+        "name": "monitor",
+        "platform": "puffy"
+      },
+      "menu": {
+        "id": "IaGsWcNQwtg9",
+        "name": "menu",
+        "platform": "puffy"
+      },
+      "palette": {
+        "id": "UMQ5uj7dfNXw",
+        "name": "paint-palette",
+        "platform": "puffy"
+      },
+      "laptop": {
+        "id": "NjN6h1pPvAKY",
+        "name": "laptop",
+        "platform": "puffy"
+      },
+      "sun": {
+        "id": "g1rkNtB2IPNE",
+        "name": "sun",
+        "platform": "puffy"
+      },
+      "moon": {
+        "id": "TF7fxaCBVl5D",
+        "name": "crescent-moon",
+        "platform": "puffy"
+      },
+      "speaker": {
+        "id": "qHNrgJy2n0Cl",
+        "name": null,
+        "platform": "puffy"
+      },
+      "mute": {
+        "id": "P5Lv3JjmYxTb",
+        "name": "mute",
+        "platform": "puffy"
+      },
+      "smile": {
+        "id": "SYEe4jYlLqta",
+        "name": "smiling",
+        "platform": "puffy"
+      }
+    },
+    "glass": {
+      "general": {
+        "id": "6Q7CJQsow1cJ",
+        "name": "user-group-man-woman",
+        "platform": "sf-regular"
+      },
+      "chat": {
+        "id": "lCYw1uasYgD5",
+        "name": "chat",
+        "platform": "sf-regular"
+      },
+      "folder": {
+        "id": "gdhPhwyXqAJz",
+        "name": "folder-invoices",
+        "platform": "sf-regular"
+      },
+      "settings": {
+        "id": "M9s3DeMEWotE",
+        "name": "settings",
+        "platform": "sf-regular"
+      },
+      "plus": {
+        "id": "3Ta28RFjxtRF",
+        "name": "plus-math",
+        "platform": "sf-regular"
+      },
+      "radar": {
+        "id": "aDqra9nnJaXP",
+        "name": "radar",
+        "platform": "sf-regular"
+      },
+      "send": {
+        "id": "Jky8S7KJsK5c",
+        "name": "sent",
+        "platform": "sf-regular"
+      },
+      "check": {
+        "id": "zxyg1S6k3sb5",
+        "name": "checked",
+        "platform": "sf-regular"
+      },
+      "clock": {
+        "id": "er4mnn6ILynU",
+        "name": "clock",
+        "platform": "sf-regular"
+      },
+      "alert": {
+        "id": "jEcZlBEszuKr",
+        "name": "error",
+        "platform": "sf-regular"
+      },
+      "file": {
+        "id": "uA2K7R4DLJFG",
+        "name": "file",
+        "platform": "sf-regular"
+      },
+      "cast": {
+        "id": "dm4a1Qqf1OOK",
+        "name": null,
+        "platform": "sf-regular"
+      },
+      "pointer": {
+        "id": "xrwE2Qxg9XYK",
+        "name": "hand-cursor",
+        "platform": "sf-regular"
+      },
+      "shield": {
+        "id": "d5qL53xQ8Tak",
+        "name": "shield",
+        "platform": "sf-regular"
+      },
+      "shield-check": {
+        "id": "d4Ew6ImCLbxm",
+        "name": null,
+        "platform": "sf-regular"
+      },
+      "close": {
+        "id": "J3PhU48KWI9A",
+        "name": "multiply",
+        "platform": "sf-regular"
+      },
+      "download": {
+        "id": "MwslvgNC1cnO",
+        "name": "download",
+        "platform": "sf-regular"
+      },
+      "upload": {
+        "id": "c3Z8IwwzvmWR",
+        "name": "upload",
+        "platform": "sf-regular"
+      },
+      "pencil": {
+        "id": "3dbDiCK5fTtx",
+        "name": "create-new",
+        "platform": "sf-regular"
+      },
+      "trash": {
+        "id": "G3ke6AwujrRv",
+        "name": "trash",
+        "platform": "sf-regular"
+      },
+      "external": {
+        "id": "1lsm7jKm7MeX",
+        "name": "external-link",
+        "platform": "sf-regular"
+      },
+      "chevron-right": {
+        "id": "bydn8wMoawny",
+        "name": "forward",
+        "platform": "sf-regular"
+      },
+      "refresh": {
+        "id": "BSFjPshmzfpr",
+        "name": "refresh",
+        "platform": "sf-regular"
+      },
+      "monitor": {
+        "id": "ZSstbI9a5JZw",
+        "name": "monitor",
+        "platform": "sf-regular"
+      },
+      "menu": {
+        "id": "ykhOFnBIQN8l",
+        "name": "menu",
+        "platform": "sf-regular"
+      },
+      "palette": {
+        "id": "WyMZpmyN1hmP",
+        "name": "paint-palette",
+        "platform": "sf-regular"
+      },
+      "laptop": {
+        "id": "hAmECreD3d2Y",
+        "name": "laptop",
+        "platform": "sf-regular"
+      },
+      "sun": {
+        "id": "URphhfIjBd0M",
+        "name": "sun",
+        "platform": "sf-regular"
+      },
+      "moon": {
+        "id": "H3mmKEsuafpa",
+        "name": "moon-symbol",
+        "platform": "sf-regular"
+      },
+      "speaker": {
+        "id": "nZX05rmXOLrT",
+        "name": "speaker",
+        "platform": "sf-regular"
+      },
+      "mute": {
+        "id": "644",
+        "name": null,
+        "platform": "sf-regular"
+      },
+      "smile": {
+        "id": "KjUSB7J6ty47",
+        "name": "happy",
+        "platform": "sf-regular"
+      }
+    },
+    "retro": {
+      "general": {
+        "id": "0WAYK8I24GQs",
+        "name": "user-group-man-woman",
+        "platform": "retro"
+      },
+      "chat": {
+        "id": "xGb5KneHNUiW",
+        "name": "chat",
+        "platform": "retro"
+      },
+      "folder": {
+        "id": "6SgFdYCjyJHp",
+        "name": "folder-invoices",
+        "platform": "retro"
+      },
+      "settings": {
+        "id": "xK4xPZEvYZ9M",
+        "name": "settings",
+        "platform": "retro"
+      },
+      "plus": {
+        "id": "5aNAVdFgyCCY",
+        "name": "plus-math",
+        "platform": "retro"
+      },
+      "radar": {
+        "id": "4qsNP9ufCYLd",
+        "name": "radar",
+        "platform": "retro"
+      },
+      "check": {
+        "id": "PEEG41meOgjn",
+        "name": "checked",
+        "platform": "retro"
+      },
+      "clock": {
+        "id": "8N2dy7Pd1RyP",
+        "name": "clock",
+        "platform": "retro"
+      },
+      "alert": {
+        "id": "7DT0baA1HXde",
+        "name": "error",
+        "platform": "retro"
+      },
+      "file": {
+        "id": "n9PK3UjhH19o",
+        "name": "file",
+        "platform": "retro"
+      },
+      "cast": {
+        "id": "aH5JoO85Plw6",
+        "name": null,
+        "platform": "retro"
+      },
+      "pointer": {
+        "id": "DHeGhyRV0V9V",
+        "name": "cursor",
+        "platform": "retro"
+      },
+      "shield": {
+        "id": "YNmM9IOUlslM",
+        "name": "shield",
+        "platform": "retro"
+      },
+      "shield-check": {
+        "id": "1Vy8y9RwxXin",
+        "name": "security-configuration",
+        "platform": "retro"
+      },
+      "close": {
+        "id": "6yDOIKsFvny8",
+        "name": "multiply",
+        "platform": "retro"
+      },
+      "download": {
+        "id": "xaB9UPGgthUx",
+        "name": "download",
+        "platform": "retro"
+      },
+      "upload": {
+        "id": "xB8FPzInABXs",
+        "name": "upload-to-cloud",
+        "platform": "retro"
+      },
+      "pencil": {
+        "id": "IjurrzTlseSD",
+        "name": "create-new",
+        "platform": "retro"
+      },
+      "trash": {
+        "id": "qk84H0Mta6Be",
+        "name": "trash",
+        "platform": "retro"
+      },
+      "external": {
+        "id": "Tp9AKMntUYTA",
+        "name": "link",
+        "platform": "retro"
+      },
+      "chevron-right": {
+        "id": "SdwdxoKTsgCI",
+        "name": "forward",
+        "platform": "retro"
+      },
+      "refresh": {
+        "id": "FxH7ZwR9jw3m",
+        "name": "refresh",
+        "platform": "retro"
+      },
+      "monitor": {
+        "id": "EwwBTzWtiitK",
+        "name": "monitor",
+        "platform": "retro"
+      },
+      "menu": {
+        "id": "NMlHKfxnKHd6",
+        "name": "menu",
+        "platform": "retro"
+      },
+      "palette": {
+        "id": "0CGdEoKPRFgm",
+        "name": "paint-palette",
+        "platform": "retro"
+      },
+      "laptop": {
+        "id": "CnUevikJgobs",
+        "name": "laptop",
+        "platform": "retro"
+      },
+      "sun": {
+        "id": "jdjg2OdoxJ7G",
+        "name": "sun",
+        "platform": "retro"
+      },
+      "moon": {
+        "id": "guhdReEoVOvw",
+        "name": "crescent-moon",
+        "platform": "retro"
+      },
+      "speaker": {
+        "id": "RQRtuXzbCcu7",
+        "name": "speaker",
+        "platform": "retro"
+      },
+      "mute": {
+        "id": "2XgeNQTR4Gvs",
+        "name": "mute",
+        "platform": "retro"
+      },
+      "smile": {
+        "id": "qJaH9iKO0Xss",
+        "name": "happy",
+        "platform": "retro"
+      },
+      "send": {
+        "id": "ZYyrrpLqriXB",
+        "name": null,
+        "platform": "retro"
+      }
+    }
+  }
+}

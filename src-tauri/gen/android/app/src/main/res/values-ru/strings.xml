@@ -1,0 +1,13 @@
+<resources>
+    <string name="capture_channel">Показ экрана</string>
+    <string name="capture_title">Экран показывается</string>
+    <string name="capture_text">Устройства в вашей сети видят этот экран.</string>
+    <string name="capture_stop">Остановить</string>
+    <string name="files_title">Доступ к файлам</string>
+    <string name="files_text">Ropeway сохраняет полученные файлы в Download/Ropeway, а общую папку держит в Documents/Ropeway Shared. Чтобы ими пользоваться, разрешите доступ ко всем файлам.</string>
+    <string name="files_allow">Разрешить</string>
+    <string name="files_later">Позже</string>
+    <string name="control_label">Ropeway: управление с компьютера</string>
+    <string name="control_summary">Позволяет компьютеру, которому вы разрешили, нажимать, листать и вводить текст на этом телефоне.</string>
+    <string name="control_description">Ropeway использует эту службу, только пока вы разрешаете компьютеру в вашей сети управлять телефоном: она выполняет нажатия, свайпы, ввод текста и кнопки «Назад» / «Домой», присланные с этого компьютера. В остальное время ничего не читается и не отправляется.</string>
+</resources>

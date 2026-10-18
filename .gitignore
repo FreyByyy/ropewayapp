@@ -1,0 +1,19 @@
+node_modules/
+dist/
+target/
+src-tauri/gen/schemas/
+*.log
+
+# Built packages
+releases/
+
+# Personal notes and screenshots for revisions
+user_revisions/
+
+# Android: build output, native libraries copied in by scripts/build-android.sh,
+# and the release signing key (never commit it).
+src-tauri/gen/android/app/build/
+src-tauri/gen/android/app/src/main/jniLibs/
+src-tauri/gen/android/.gradle/
+src-tauri/gen/android/*.jks
+src-tauri/gen/android/keystore.properties

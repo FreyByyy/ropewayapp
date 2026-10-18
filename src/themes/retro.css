@@ -1,0 +1,906 @@
+/* Retro: Windows 98. Gray windows with beveled edges on a teal desktop,
+   title bars in the accent, white sunken fields, no rounded corners and
+   almost no motion. Light only. */
+
+[data-base="retro"] {
+  --send-h: 26px;
+  --ease-emph: steps(3, end);
+  --ease-out: linear;
+}
+
+[data-base="retro"] body {
+  background: var(--rt-desktop);
+  font-size: 12.5px;
+  -webkit-font-smoothing: none;
+}
+
+[data-base="retro"] ::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* Windows 98 had no page transitions. */
+[data-base="retro"] .main > .view,
+[data-base="retro"] .messages > .row,
+[data-base="retro"] .overlay,
+[data-base="retro"] .badge {
+  animation: none;
+}
+
+[data-base="retro"] :focus-visible {
+  outline: 1px dotted var(--text);
+  outline-offset: -4px;
+}
+
+/* ---- windows ---- */
+
+[data-base="retro"] .app[data-layout="soft"] {
+  gap: 10px;
+  padding: 10px;
+}
+
+[data-base="retro"] :is(.sidebar, .main) {
+  background: var(--bg);
+  border: 0;
+  border-radius: 0;
+  padding: 3px;
+  box-shadow: var(--rt-window);
+}
+
+[data-base="retro"] .main {
+  overflow: hidden;
+}
+
+[data-base="retro"] .main > .view {
+  min-height: 0;
+}
+
+[data-base="retro"] .sidebar {
+  gap: 0;
+}
+
+/* Title bars: the brand row and the content header. */
+[data-base="retro"] .brand,
+[data-base="retro"] .chat-head,
+[data-base="retro"] .settings-head,
+[data-base="retro"] .modal-head,
+[data-base="retro"] .drawer-head {
+  background: var(--rt-title);
+  color: #fff;
+  border: 0;
+  border-radius: 0;
+}
+
+[data-base="retro"] .brand {
+  min-height: 22px;
+  margin: 0 0 6px;
+  padding: 2px 4px;
+  gap: 4px;
+}
+
+[data-base="retro"] .brand > svg {
+  width: 16px;
+  height: 16px;
+}
+
+[data-base="retro"] .brand-name {
+  font-family: var(--font);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+[data-base="retro"] .pane-toggle {
+  width: 20px;
+  height: 18px;
+  border-radius: 0;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--rt-raised);
+}
+
+[data-base="retro"] .list-head {
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 2px 6px 6px;
+}
+
+/* ---- device list: a white list box ---- */
+
+[data-base="retro"] .nav-item {
+  gap: 8px;
+  padding: 3px 6px;
+  margin: 0;
+  border-radius: 0;
+  transition: none;
+}
+
+[data-base="retro"] .nav-item:hover {
+  background: transparent;
+}
+
+[data-base="retro"] .nav-item.active {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+[data-base="retro"] .nav-item.active :is(.nav-title, .nav-sub, .nav-sub *, .trusted-mark) {
+  color: var(--on-accent);
+}
+
+[data-base="retro"] .nav-item:focus-visible {
+  outline: 1px dotted var(--text);
+  outline-offset: -1px;
+}
+
+[data-base="retro"] .nav-item.general {
+  margin-bottom: 2px;
+}
+
+[data-base="retro"] .nav-icon,
+[data-base="retro"] .nav-icon.folder {
+  width: 32px;
+  height: 32px;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+[data-base="retro"] .nav-title {
+  font-weight: 700;
+}
+
+[data-base="retro"] .nav-sub {
+  color: var(--muted);
+}
+
+[data-base="retro"] .peer-list {
+  margin: 0 0 6px;
+  padding: 2px;
+  background: var(--panel);
+  box-shadow: var(--rt-field);
+}
+
+[data-base="retro"] .avatar {
+  border-radius: 0;
+  font-weight: 700;
+  box-shadow: inset -1px -1px rgba(0, 0, 0, 0.45), inset 1px 1px rgba(255, 255, 255, 0.7);
+}
+
+[data-base="retro"] .presence {
+  border-radius: 0;
+  border: 1px solid var(--text);
+  width: 9px;
+  height: 9px;
+}
+
+[data-base="retro"] .section-head {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+  padding: 4px 6px;
+}
+
+[data-base="retro"] .section-count {
+  color: var(--muted);
+}
+
+[data-base="retro"] .badge {
+  border-radius: 0;
+  background: #c00000;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 1px 1px 0 var(--text);
+}
+
+[data-base="retro"] .searching {
+  color: var(--text);
+}
+
+[data-base="retro"] .sidebar-foot {
+  border-top: 0;
+  padding-top: 0;
+  gap: 4px;
+}
+
+/* ---- buttons: raised, sunken while pressed ---- */
+
+[data-base="retro"] :is(.btn, .foot-btn, .tool, .send, .icon-btn, .source, .segmented button, .crumbs button, .retry,
+  .emoji-toggle, .accent-chip) {
+  border: 0;
+  border-radius: 0;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--rt-raised);
+  transition: none;
+}
+
+[data-base="retro"] :is(.btn, .foot-btn, .tool, .send, .icon-btn, .source, .segmented button, .crumbs button, .retry,
+  .emoji-toggle, .accent-chip):not(:disabled):hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+[data-base="retro"] :is(.btn, .foot-btn, .tool, .send, .icon-btn, .source, .segmented button, .crumbs button, .retry,
+  .emoji-toggle, .accent-chip):not(:disabled):active {
+  box-shadow: var(--rt-sunken);
+  padding-top: 1px;
+  padding-left: 1px;
+}
+
+[data-base="retro"] :is(.btn, .foot-btn, .tool, .send, .icon-btn, .source, .emoji-toggle):disabled {
+  color: var(--faint);
+  text-shadow: 1px 1px 0 var(--rt-hi);
+  opacity: 1;
+}
+
+[data-base="retro"] :is(.btn, .foot-btn, .tool, .send, .icon-btn, .source, .emoji-toggle):disabled .icon-img {
+  filter: grayscale(1) opacity(0.5);
+}
+
+/* Toggled-on buttons sit pressed in over a dithered face. */
+[data-base="retro"] :is(.foot-btn.active, .tool.pressed, .tool.trust.on, .segmented button.on, .source.on, .emoji-toggle.on,
+  .accent-chip.on) {
+  box-shadow: var(--rt-sunken);
+  background: repeating-conic-gradient(var(--bg) 0% 25%, var(--rt-hi) 0% 50%) 0 0 / 2px 2px;
+  color: var(--text);
+}
+
+[data-base="retro"] .btn {
+  min-width: 75px;
+  height: 26px;
+  padding: 0 12px;
+  font-weight: 400;
+}
+
+[data-base="retro"] .btn.small {
+  min-width: 0;
+  height: 23px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+/* The default button carries an extra black frame. */
+[data-base="retro"] .btn.primary {
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--rt-dark), inset -2px -2px var(--rt-dark), inset 2px 2px var(--rt-hi),
+    inset -3px -3px var(--rt-shade), inset 3px 3px var(--rt-light);
+}
+
+[data-base="retro"] .btn.danger {
+  color: #c00000;
+  font-weight: 700;
+}
+
+[data-base="retro"] .btn.ghost {
+  color: var(--text);
+}
+
+[data-base="retro"] .foot-btn {
+  height: 26px;
+  font-weight: 400;
+}
+
+[data-base="retro"] .tool {
+  height: 24px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+[data-base="retro"] .icon-btn {
+  width: 24px;
+  height: 22px;
+  color: var(--text);
+}
+
+/* Close buttons on title bars are small. */
+[data-base="retro"] :is(.modal-head, .drawer-head) .icon-btn {
+  width: 18px;
+  height: 16px;
+}
+
+[data-base="retro"] :is(.modal-head, .drawer-head) .icon-btn :is(svg, .icon-png, .icon-img) {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+[data-base="retro"] .divider {
+  width: 2px;
+  height: 20px;
+  background: transparent;
+  box-shadow: var(--rt-thin-down);
+}
+
+/* ---- content window ---- */
+
+[data-base="retro"] .chat-head,
+[data-base="retro"] .settings-head {
+  min-height: 0;
+  padding: 3px 3px 3px 6px;
+  gap: 6px;
+}
+
+[data-base="retro"] .head-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+}
+
+[data-base="retro"] .chat-head .avatar {
+  width: 18px !important;
+  height: 18px !important;
+  font-size: 9px !important;
+}
+
+[data-base="retro"] .head-text {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+[data-base="retro"] .head-text h1,
+[data-base="retro"] .settings-head h1 {
+  font-family: var(--font);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+}
+
+[data-base="retro"] .head-text p,
+[data-base="retro"] .head-text p *,
+[data-base="retro"] .head-text .status-on {
+  color: #fff;
+  opacity: 0.85;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+[data-base="retro"] .head-actions {
+  gap: 3px;
+}
+
+[data-base="retro"] .chat-head .presence {
+  border-color: var(--text);
+}
+
+[data-base="retro"] .messages {
+  margin: 4px 3px 0;
+  padding: 8px 10px;
+  background: var(--panel);
+  box-shadow: var(--rt-field);
+}
+
+[data-base="retro"] .empty {
+  color: var(--muted);
+}
+
+[data-base="retro"] .day {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* Incoming messages are tooltips, outgoing ones are selections. */
+[data-base="retro"] .bubble,
+[data-base="retro"] .row.in .bubble,
+[data-base="retro"] .row.out .bubble {
+  border-radius: 0;
+  padding: 3px 7px 2px;
+}
+
+[data-base="retro"] .row.in .bubble {
+  background: var(--bubble-in);
+  border: 1px solid var(--rt-dark);
+  box-shadow: none;
+}
+
+[data-base="retro"] .row.out .bubble {
+  background: var(--accent);
+  color: var(--on-accent);
+  border: 1px solid var(--rt-dark);
+  box-shadow: none;
+}
+
+[data-base="retro"] .row.out .bubble .meta {
+  opacity: 0.85;
+}
+
+[data-base="retro"] .sender {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+[data-base="retro"] .offline-note {
+  border-radius: 0;
+  margin: 4px 3px 0;
+  background: var(--bubble-in);
+  border: 1px solid var(--rt-dark);
+  color: var(--text);
+}
+
+[data-base="retro"] .transfer {
+  border-radius: 0;
+  background: var(--bg) !important;
+  color: var(--text);
+  border: 0;
+  box-shadow: var(--rt-window);
+}
+
+[data-base="retro"] .transfer-icon {
+  border-radius: 0;
+  background: transparent;
+}
+
+/* Progress: navy blocks in a sunken box. */
+[data-base="retro"] .progress {
+  height: 16px;
+  border-radius: 0;
+  padding: 2px;
+  background: var(--panel);
+  box-shadow: var(--rt-thin-down);
+}
+
+[data-base="retro"] .progress-bar {
+  border-radius: 0;
+  background: repeating-linear-gradient(90deg, var(--accent) 0 8px, transparent 8px 10px);
+  transition: width 0.2s steps(4, end);
+}
+
+[data-base="retro"] .composer-wrap {
+  padding: 4px 3px 3px;
+}
+
+[data-base="retro"] .composer {
+  align-items: flex-end;
+  gap: 4px;
+  padding: 3px 3px 3px 4px;
+  border: 0;
+  border-radius: 0;
+  background: var(--panel);
+  box-shadow: var(--rt-field);
+}
+
+[data-base="retro"] .composer:focus-within {
+  border: 0;
+}
+
+[data-base="retro"] .composer textarea {
+  padding-left: 2px;
+}
+
+[data-base="retro"] .send {
+  width: auto;
+  min-width: 52px;
+  height: 26px;
+  padding: 0 8px;
+}
+
+[data-base="retro"] .send:disabled {
+  opacity: 1;
+}
+
+[data-base="retro"] .emoji-toggle {
+  width: 26px;
+  height: 26px;
+}
+
+[data-base="retro"] .emoji-toggle.on {
+  transform: none;
+}
+
+/* ---- settings ---- */
+
+/* Cards are group boxes: an etched frame. */
+[data-base="retro"] .card {
+  border-radius: 0;
+  background: var(--bg);
+  border: 1px solid var(--rt-shade);
+  box-shadow: inset 1px 1px var(--rt-hi), 1px 1px var(--rt-hi);
+  padding: 12px 14px;
+}
+
+[data-base="retro"] .settings-body {
+  margin: 4px 3px 3px;
+  background: var(--bg);
+  gap: 10px;
+  padding: 12px;
+}
+
+[data-base="retro"] .eyebrow {
+  color: var(--muted);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12px;
+}
+
+[data-base="retro"] .device-name {
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+[data-base="retro"] .code-chip,
+[data-base="retro"] .code-compare {
+  border-radius: 0;
+  background: var(--panel);
+  box-shadow: var(--rt-field);
+}
+
+[data-base="retro"] .code-chip .code,
+[data-base="retro"] .big-code {
+  color: var(--text);
+}
+
+[data-base="retro"] .field-label {
+  font-weight: 700;
+}
+
+[data-base="retro"] .segmented {
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+[data-base="retro"] .segmented button {
+  padding: 3px 12px;
+  font-weight: 400;
+}
+
+/* Switches become check boxes. */
+[data-base="retro"] .switch {
+  width: 13px;
+  height: 13px;
+}
+
+[data-base="retro"] .switch span {
+  border-radius: 0;
+  background: var(--panel);
+  box-shadow: var(--rt-field);
+  transition: none;
+}
+
+[data-base="retro"] .switch span::after {
+  top: 2px;
+  left: 2px;
+  width: 9px;
+  height: 9px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transition: none;
+}
+
+[data-base="retro"] .switch input:checked + span {
+  background: var(--panel);
+}
+
+[data-base="retro"] .switch input:checked + span::after {
+  transform: none;
+  background: no-repeat center / 7px 7px
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 7' shape-rendering='crispEdges'%3E%3Cpath d='M6 0h1v2H6v1H5v1H4v1H3v1H2V5H1V4H0V2h1v1h1v1h1V3h1V2h1V1h1z'/%3E%3C/svg%3E");
+}
+
+[data-base="retro"] .switch input:focus-visible + span {
+  outline: 1px dotted var(--text);
+  outline-offset: 1px;
+}
+
+[data-base="retro"] .inline-form input,
+[data-base="retro"] .wide-input,
+[data-base="retro"] .ed-field :is(input:not([type]), textarea),
+[data-base="retro"] .color-pair input:not([type="color"]),
+[data-base="retro"] .emoji-search {
+  height: 24px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 0;
+  background: var(--panel);
+  box-shadow: var(--rt-field);
+}
+
+[data-base="retro"] .ed-field textarea {
+  height: auto;
+  padding: 4px;
+}
+
+[data-base="retro"] select {
+  height: 24px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 0;
+  background-color: var(--panel);
+  color: var(--text);
+  box-shadow: var(--rt-field);
+}
+
+[data-base="retro"] .theme-pick {
+  border-radius: 0;
+}
+
+[data-base="retro"] .theme-pick:hover {
+  background: transparent;
+}
+
+[data-base="retro"] .theme-card.on .theme-pick {
+  border-color: var(--accent);
+  border-style: dotted;
+  background: transparent;
+}
+
+[data-base="retro"] .swatch,
+[data-base="retro"] .theme-dot {
+  border-radius: 0;
+}
+
+/* ---- dialogs and menus ---- */
+
+[data-base="retro"] .overlay {
+  background: transparent;
+  backdrop-filter: none;
+}
+
+[data-base="retro"] .modal {
+  border: 0;
+  border-radius: 0;
+  padding: 18px 16px 12px;
+  background: var(--bg);
+  box-shadow: var(--rt-window), 2px 2px 0 rgba(0, 0, 0, 0.3);
+  animation: none;
+}
+
+[data-base="retro"] .modal-head {
+  margin: -15px -13px 12px;
+  padding: 2px 3px 2px 6px;
+  min-height: 22px;
+}
+
+[data-base="retro"] .modal-head h2 {
+  font-family: var(--font);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+}
+
+[data-base="retro"] .drawer {
+  border-left: 0;
+  border-radius: 0;
+  background: var(--bg);
+  box-shadow: var(--rt-window);
+}
+
+[data-base="retro"] .drawer-head {
+  margin: 3px 3px 0;
+  min-height: 0;
+  padding: 3px 4px 3px 8px;
+}
+
+[data-base="retro"] .drawer-head h2 {
+  color: #fff;
+  font-family: var(--font);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+[data-base="retro"] .menu {
+  padding: 3px;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg);
+  box-shadow: var(--rt-window), 2px 2px 0 rgba(0, 0, 0, 0.3);
+  animation: retro-menu 120ms steps(4, end);
+}
+
+/* Windows 98 menus slid open. */
+@keyframes retro-menu {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+[data-base="retro"] .menu button {
+  border-radius: 0;
+  padding: 3px 20px;
+}
+
+[data-base="retro"] .menu button:hover {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+[data-base="retro"] .emoji-picker {
+  border: 0;
+  border-radius: 0;
+  background: var(--bg);
+  box-shadow: var(--rt-window), 2px 2px 0 rgba(0, 0, 0, 0.3);
+  animation: none;
+}
+
+[data-base="retro"] .emoji-head {
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 700;
+}
+
+[data-base="retro"] .emoji-grid {
+  background: var(--panel);
+  box-shadow: var(--rt-field);
+  padding: 2px;
+}
+
+[data-base="retro"] .emoji-grid .emoji-head {
+  background: var(--panel);
+}
+
+[data-base="retro"] .emoji-tab {
+  border-radius: 0;
+  filter: none;
+  opacity: 1;
+  box-shadow: var(--rt-raised);
+}
+
+[data-base="retro"] .emoji-tab:hover {
+  background: var(--bg);
+}
+
+[data-base="retro"] .emoji-tab.on {
+  background: repeating-conic-gradient(var(--bg) 0% 25%, var(--rt-hi) 0% 50%) 0 0 / 2px 2px;
+  box-shadow: var(--rt-sunken);
+}
+
+[data-base="retro"] .emoji-cell {
+  border-radius: 0;
+}
+
+[data-base="retro"] .emoji-cell:hover {
+  background: var(--accent);
+  transform: none;
+}
+
+/* ---- screen sharing and the shared folder ---- */
+
+[data-base="retro"] .screen-bar {
+  background: transparent;
+  border: 0;
+  gap: 3px;
+  padding: 4px 3px 0;
+}
+
+[data-base="retro"] .sb-row {
+  border-radius: 0;
+  background: var(--bubble-in) !important;
+  border: 1px solid var(--rt-dark);
+  color: var(--text);
+}
+
+[data-base="retro"] .browser,
+[data-base="retro"] .requests {
+  border: 0;
+  border-radius: 0;
+  background: var(--panel);
+  box-shadow: var(--rt-field);
+}
+
+[data-base="retro"] .shared-body {
+  margin: 4px 3px 3px;
+}
+
+[data-base="retro"] .files th {
+  background: var(--bg);
+  box-shadow: var(--rt-raised);
+  color: var(--text);
+  font-weight: 400;
+}
+
+[data-base="retro"] .files tbody tr:hover {
+  background: transparent;
+}
+
+[data-base="retro"] .files tbody tr:hover td {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+[data-base="retro"] .chip,
+[data-base="retro"] .request-icon,
+[data-base="retro"] .entry-icon {
+  border-radius: 0;
+}
+
+/* ---- scroll bars ---- */
+
+[data-base="retro"] ::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+[data-base="retro"] ::-webkit-scrollbar-track {
+  background: repeating-conic-gradient(var(--bg) 0% 25%, var(--rt-hi) 0% 50%) 0 0 / 2px 2px;
+}
+
+[data-base="retro"] ::-webkit-scrollbar-thumb {
+  border: 0;
+  border-radius: 0;
+  background: var(--bg);
+  box-shadow: var(--rt-raised);
+}
+
+[data-base="retro"] ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--bg);
+}
+
+[data-base="retro"] ::-webkit-scrollbar-button:single-button {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--bg);
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: var(--rt-raised);
+}
+
+[data-base="retro"] ::-webkit-scrollbar-button:single-button:active {
+  box-shadow: var(--rt-sunken);
+}
+
+[data-base="retro"] ::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M3 0h1v1h1v1h1v1h1v1H0V3h1V2h1V1h1z'/%3E%3C/svg%3E");
+}
+
+[data-base="retro"] ::-webkit-scrollbar-button:single-button:vertical:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h7v1H6v1H5v1H4v1H3V3H2V2H1V1H0z'/%3E%3C/svg%3E");
+}
+
+[data-base="retro"] ::-webkit-scrollbar-corner {
+  background: var(--bg);
+}
+
+/* ---- preview card ---- */
+
+.tp[data-tp-base="retro"] {
+  border-radius: 0;
+  border-color: var(--rt-shade);
+  background: var(--rt-desktop);
+}
+
+.tp[data-tp-base="retro"] :is(.tp-side, .tp-main) {
+  border-radius: 0;
+  background: var(--bg);
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #ffffff;
+  border-top: 5px solid var(--accent);
+}
+
+.tp[data-tp-base="retro"] :is(.tp-row, .tp-bubble, .tp-input) {
+  border-radius: 0;
+}
+
+.tp[data-tp-base="retro"] .tp-row {
+  background: var(--panel);
+}
+
+.tp[data-tp-base="retro"] .tp-row.on {
+  background: var(--accent);
+  box-shadow: none;
+}
+
+.tp[data-tp-base="retro"] .tp-bubble {
+  box-shadow: 0 0 0 1px #000;
+}
+
+.tp[data-tp-base="retro"] .tp-input {
+  background: var(--panel);
+  box-shadow: inset 1px 1px #808080;
+}

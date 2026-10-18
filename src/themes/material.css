@@ -1,0 +1,438 @@
+/* Material 3: tonal surfaces from the accent, navigation rail with a pill,
+   capsule controls and a touch ripple. */
+
+[data-base="material"] {
+  --send-h: 44px;
+  --ease-emph: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.3, 0, 0, 1);
+}
+
+[data-base="material"] body {
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+
+/* Ripple host elements. */
+[data-base="material"] :is(.btn, .nav-item, .tool, .foot-btn, .rail-item, .rail-fab, .source, .source-row, .icon-btn, .send, .segmented button, .menu button, .theme-card) {
+  position: relative;
+  overflow: hidden;
+}
+
+[data-base="material"] .rail-item {
+  overflow: visible;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.14;
+  transform: scale(0);
+  pointer-events: none;
+  animation: ripple calc(600ms * var(--m) * var(--motion)) var(--ease-out) forwards;
+}
+
+@keyframes ripple {
+  70% {
+    opacity: 0.12;
+  }
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* ---- rail and list ---- */
+
+[data-base="material"] .rail {
+  background: var(--bg);
+  padding-top: 20px;
+}
+
+[data-base="material"] .rail-fab {
+  border-radius: 16px;
+  background: var(--accent-soft);
+  color: var(--text);
+  box-shadow: var(--shadow-lg);
+  transition:
+    box-shadow var(--t-med),
+    border-radius var(--t-med) var(--ease-emph);
+}
+
+[data-base="material"] .rail-fab:hover {
+  border-radius: 20px;
+}
+
+[data-base="material"] .sidebar {
+  background: var(--bg);
+  border-right: 0;
+  padding: 16px 12px;
+}
+
+[data-base="material"] .sidebar.list .list-head {
+  padding: 4px 16px 12px;
+  font-size: 22px;
+  font-weight: 400;
+}
+
+[data-base="material"] .brand-name {
+  font-weight: 500;
+}
+
+[data-base="material"] .nav-item {
+  min-height: 56px;
+  padding: 8px 16px 8px 12px;
+  border-radius: 28px;
+  gap: 14px;
+  transition: background var(--t-med) var(--ease-out);
+}
+
+[data-base="material"] .nav-item:hover {
+  background: var(--hover);
+}
+
+[data-base="material"] .nav-item.active {
+  background: var(--accent-soft);
+}
+
+[data-base="material"] .nav-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background: var(--surface-high);
+  color: var(--accent);
+}
+
+[data-base="material"] .nav-icon.folder {
+  background: var(--surface-high);
+  color: var(--accent);
+}
+
+[data-base="material"] .nav-item.active .nav-icon {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+[data-base="material"] .nav-title {
+  font-weight: 500;
+}
+
+/* Only the chat list uses the larger M3 list avatar. */
+[data-base="material"] .sidebar .nav-item .avatar {
+  width: 40px !important;
+  height: 40px !important;
+  font-size: 15px !important;
+}
+
+[data-base="material"] .section-head {
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  padding: 18px 16px 8px;
+}
+
+[data-base="material"] .badge {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+[data-base="material"] .presence {
+  border-color: var(--bg);
+}
+
+[data-base="material"] .sidebar-foot {
+  border-top: 0;
+}
+
+[data-base="material"] .foot-btn {
+  border-radius: 20px;
+  height: 40px;
+}
+
+/* ---- content pane: a rounded tonal surface ---- */
+
+[data-base="material"] .main {
+  background: var(--panel);
+  border-radius: 24px;
+  margin: 12px 12px 12px 0;
+  overflow: hidden;
+}
+
+[data-base="material"] .app[data-layout="rail"]:not(:has(> .sidebar)) .main {
+  margin-left: 0;
+}
+
+[data-base="material"] .chat-head,
+[data-base="material"] .settings-head {
+  background: transparent;
+  border-bottom: 0;
+  min-height: 72px;
+  padding: 12px 24px;
+}
+
+[data-base="material"] .head-text h1,
+[data-base="material"] .settings-head h1 {
+  font-size: 22px;
+  font-weight: 400;
+}
+
+[data-base="material"] .head-icon {
+  border-radius: 14px;
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+[data-base="material"] .tool {
+  border-radius: 20px;
+  height: 40px;
+  padding: 0 14px;
+}
+
+[data-base="material"] .tool.trust.on {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+[data-base="material"] .day {
+  border: 0;
+  border-radius: 8px;
+  background: var(--surface-high);
+}
+
+[data-base="material"] .row .bubble {
+  border-radius: 20px;
+  box-shadow: none;
+  padding: 9px 14px 6px;
+}
+
+[data-base="material"] .row.in .bubble {
+  background: var(--surface-highest);
+  border-bottom-left-radius: 6px;
+}
+
+[data-base="material"] .row.out .bubble {
+  border-bottom-right-radius: 6px;
+}
+
+[data-base="material"] .row.in.grouped .bubble {
+  border-top-left-radius: 6px;
+}
+
+[data-base="material"] .row.out.grouped .bubble {
+  border-top-right-radius: 6px;
+}
+
+[data-base="material"] .transfer {
+  border-radius: 16px;
+  background: var(--surface-high);
+  border: 0;
+  box-shadow: none;
+}
+
+[data-base="material"] .transfer-icon {
+  border-radius: 12px;
+}
+
+[data-base="material"] .composer {
+  border-radius: 28px;
+  border: 0;
+  background: var(--surface-highest);
+  box-shadow: none;
+  padding: 6px 6px 6px 20px;
+  transition: box-shadow var(--t-med);
+}
+
+[data-base="material"] .composer:focus-within {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+[data-base="material"] .send {
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+}
+
+/* ---- controls ---- */
+
+[data-base="material"] .btn {
+  height: 40px;
+  padding: 0 24px;
+  border-radius: 20px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+[data-base="material"] .btn.small {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 16px;
+}
+
+[data-base="material"] .btn.primary:not(:disabled):hover {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+}
+
+[data-base="material"] .btn.ghost {
+  color: var(--accent);
+}
+
+[data-base="material"] .card {
+  border: 0;
+  border-radius: 16px;
+  background: var(--surface-high);
+}
+
+[data-base="material"] .segmented {
+  padding: 0;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  overflow: hidden;
+}
+
+[data-base="material"] .segmented button {
+  border-radius: 0;
+  padding: 8px 18px;
+  border-left: 1px solid var(--border);
+}
+
+[data-base="material"] .segmented button:first-child {
+  border-left: 0;
+}
+
+[data-base="material"] .segmented button.on {
+  background: var(--accent-soft);
+  color: var(--text);
+  box-shadow: none;
+}
+
+[data-base="material"] .segmented button.on::before {
+  content: "✓ ";
+}
+
+/* M3 switch: the thumb grows when on. */
+[data-base="material"] .switch {
+  width: 52px;
+  height: 32px;
+}
+
+[data-base="material"] .switch span {
+  border-radius: 16px;
+  background: var(--surface-highest);
+  border: 2px solid var(--muted);
+}
+
+[data-base="material"] .switch span::after {
+  top: 6px;
+  left: 6px;
+  width: 16px;
+  height: 16px;
+  background: var(--muted);
+  box-shadow: none;
+  transition:
+    transform var(--t-med) var(--ease-emph),
+    width var(--t-med) var(--ease-emph),
+    height var(--t-med) var(--ease-emph),
+    top var(--t-med) var(--ease-emph),
+    left var(--t-med) var(--ease-emph);
+}
+
+[data-base="material"] .switch input:checked + span {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+[data-base="material"] .switch input:checked + span::after {
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  background: var(--on-accent);
+  transform: translateX(20px);
+}
+
+[data-base="material"] .inline-form input,
+[data-base="material"] .wide-input {
+  height: 48px;
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid var(--muted);
+}
+
+[data-base="material"] .inline-form input:focus,
+[data-base="material"] .wide-input:focus {
+  border: 2px solid var(--accent);
+}
+
+[data-base="material"] .modal {
+  border: 0;
+  border-radius: 28px;
+  padding: 24px;
+  background: var(--surface-high);
+}
+
+[data-base="material"] .modal-head h2 {
+  font-size: 24px;
+  font-weight: 400;
+}
+
+[data-base="material"] .modal-actions .btn.ghost {
+  background: transparent;
+}
+
+[data-base="material"] .menu {
+  border: 0;
+  border-radius: 4px;
+  padding: 8px 0;
+  background: var(--surface-high);
+}
+
+[data-base="material"] .menu button {
+  border-radius: 0;
+  padding: 12px 16px;
+}
+
+[data-base="material"] .screen-bar {
+  background: transparent;
+  gap: 8px;
+  padding: 12px 16px 0;
+  border: 0;
+}
+
+[data-base="material"] .sb-row {
+  border-radius: 16px;
+}
+
+[data-base="material"] .browser,
+[data-base="material"] .requests {
+  border-radius: 16px;
+  border: 0;
+  background: var(--surface-high);
+}
+
+[data-base="material"] .source {
+  border-radius: 8px;
+  height: 32px;
+}
+
+[data-base="material"] .chip {
+  border-radius: 8px;
+}
+
+/* Fade-through between destinations. */
+[data-base="material"] .main > .view {
+  animation-name: md-fade-through;
+}
+
+@keyframes md-fade-through {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+[data-base="material"] ::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, var(--muted) 50%, transparent);
+}

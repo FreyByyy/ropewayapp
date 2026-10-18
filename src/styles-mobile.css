@@ -1,0 +1,260 @@
+/* Phone layout. One column: the device list, or a chat / page opened over
+   it with a Back button. Applies to every theme; themes keep their look. */
+
+[data-mobile] body {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+[data-mobile] .app,
+[data-mobile] .app[data-layout] {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  height: 100%;
+}
+
+[data-mobile] .app > .sidebar,
+[data-mobile] .app > .main {
+  flex: 1;
+  min-height: 0;
+  width: auto;
+}
+
+[data-mobile] .app[data-pane="list"] > .main,
+[data-mobile] .app[data-pane="main"] > .sidebar {
+  display: none;
+}
+
+[data-mobile] .app[data-pane="main"] > .main {
+  display: flex;
+  flex-direction: column;
+  animation: mobile-in var(--t-med) var(--ease-emph) both;
+}
+
+@keyframes mobile-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+[data-mobile] .app > .sidebar {
+  border-right: 0;
+}
+
+/* Themes made of floating panels keep a margin around them. */
+[data-mobile][data-base="neu"] .app,
+[data-mobile][data-base="glass"] .app,
+[data-mobile][data-base="retro"] .app {
+  padding: 8px;
+}
+
+/* ---- headers ---- */
+
+.mobile-back {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  margin-left: -8px;
+  border-radius: 50%;
+  color: inherit;
+}
+
+.mobile-back:active {
+  background: var(--hover);
+}
+
+[data-base="retro"] .mobile-back {
+  width: 22px;
+  height: 20px;
+  margin: 0;
+  border-radius: 0;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--rt-raised);
+}
+
+[data-mobile] .chat-head,
+[data-mobile] .settings-head {
+  gap: 8px;
+  min-height: 58px;
+  padding: 8px 10px 8px 12px;
+}
+
+[data-mobile] .head-actions {
+  gap: 0;
+}
+
+[data-mobile] .head-actions .divider {
+  display: none;
+}
+
+[data-mobile] .tool {
+  min-width: 38px;
+  justify-content: center;
+  padding: 0 8px;
+}
+
+[data-mobile] .tool span:not(.icon-png) {
+  display: none;
+}
+
+[data-mobile] .head-text p .mono.dim {
+  display: none;
+}
+
+/* ---- chat ---- */
+
+[data-mobile] .messages {
+  padding: 10px 12px 6px;
+}
+
+[data-mobile] .bubble {
+  max-width: 86%;
+}
+
+[data-mobile] .composer-wrap {
+  padding: 4px 10px 10px;
+}
+
+[data-mobile] .composer textarea {
+  font-size: 16px;
+}
+
+[data-mobile] .emoji-picker {
+  left: 10px;
+  right: 10px;
+  width: auto;
+  max-width: none;
+  height: min(360px, 55vh);
+}
+
+[data-mobile] .menu {
+  min-width: 190px;
+}
+
+[data-mobile] .menu button {
+  padding: 11px 12px;
+}
+
+[data-mobile] .menu-anchor:last-of-type .menu,
+[data-mobile] .head-actions .menu {
+  left: auto;
+  right: 0;
+}
+
+[data-mobile] .sb-row {
+  flex-wrap: wrap;
+}
+
+[data-mobile] .app > .screen-bar {
+  flex: none;
+  padding: 6px 8px 4px;
+}
+
+/* ---- pages ---- */
+
+[data-mobile] .settings-body {
+  padding: 12px 12px 24px;
+}
+
+[data-mobile] .appearance-row {
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+[data-mobile] .appearance-label {
+  padding-top: 0;
+}
+
+[data-mobile] .theme-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+[data-mobile] .folder-path {
+  white-space: normal;
+  word-break: break-all;
+}
+
+[data-mobile] .browser {
+  overflow-x: auto;
+}
+
+[data-mobile] .drawer {
+  width: 100vw;
+}
+
+/* ---- dialogs ---- */
+
+[data-mobile] .overlay {
+  align-items: end;
+  padding: 12px;
+}
+
+[data-mobile] .modal {
+  width: 100%;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+}
+
+[data-mobile] .modal-actions .btn {
+  height: 42px;
+}
+
+/* ---- watching a screen ---- */
+
+.mobile-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: #000;
+}
+
+[data-mobile] .viewer canvas {
+  touch-action: none;
+}
+
+.viewer-fab {
+  position: absolute;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(20, 20, 24, 0.72);
+  color: #fff;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.viewer-fab.close {
+  left: 12px;
+  bottom: 12px;
+}
+
+.viewer-fab.keyboard {
+  right: 12px;
+  bottom: 12px;
+}
+
+.viewer-fab.keyboard.on {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* The field the phone keyboard types into: present, but not seen. */
+.mobile-keyboard-field {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  font-size: 16px;
+  border: 0;
+  padding: 0;
+}

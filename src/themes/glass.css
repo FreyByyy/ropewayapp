@@ -1,0 +1,577 @@
+/* Liquid Glass: translucent panes over a colored wallpaper. Each pane blurs
+   what is behind it and catches light on its rim; pressed things squish. */
+
+[data-base="glass"] {
+  --send-h: 38px;
+  --ease-emph: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-base="glass"] body {
+  background: var(--glass-wall);
+  background-color: var(--bg);
+  background-attachment: fixed;
+}
+
+/* ---- the glass material ---- */
+
+/* Rim light: a 1px gradient border, brightest at the top-left and bottom-right. */
+/* Menus, the emoji panel and the drawer are positioned already. */
+[data-base="glass"] :is(.sidebar, .main, .modal, .composer, .card, .nav-item.active, .btn, .segmented button.on,
+  .row.in .bubble, .day, .theme-card.on .theme-pick, .sb-row, .browser, .requests, .source, .foot-btn) {
+  position: relative;
+}
+
+[data-base="glass"] :is(.sidebar, .main, .modal, .menu, .composer, .emoji-picker, .card, .nav-item.active, .btn:not(.ghost),
+  .segmented button.on, .row.in .bubble, .day, .theme-card.on .theme-pick, .sb-row, .browser, .requests, .source.on,
+  .foot-btn:hover, .foot-btn.active)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--glass-rim);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+[data-base="glass"] :is(.sidebar, .main) {
+  background: var(--glass-fill);
+  border: 0;
+  border-radius: var(--r-lg);
+  backdrop-filter: blur(34px) saturate(1.8);
+  box-shadow:
+    var(--shadow-lg),
+    inset 0 1px 0 var(--glass-hi);
+}
+
+[data-base="glass"] .app[data-layout="soft"] {
+  gap: 14px;
+  padding: 14px;
+}
+
+[data-base="glass"] .sidebar {
+  padding: 16px 12px 12px;
+}
+
+[data-base="glass"] .main {
+  overflow: hidden;
+}
+
+[data-base="glass"] .brand-name {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+[data-base="glass"] .list-head,
+[data-base="glass"] .head-text h1,
+[data-base="glass"] .settings-head h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* ---- navigation ---- */
+
+[data-base="glass"] .nav-item {
+  padding: 8px 10px;
+  margin: 1px 0;
+  border-radius: calc(var(--r-lg) - 8px);
+  transition:
+    background var(--t-fast),
+    transform var(--t-med) var(--ease-emph);
+}
+
+[data-base="glass"] .nav-item:hover {
+  background: var(--glass-fill-soft);
+}
+
+[data-base="glass"] .nav-item.active {
+  background: var(--glass-fill-strong);
+  box-shadow: var(--shadow);
+}
+
+[data-base="glass"] .nav-item:active {
+  transform: scale(0.97);
+}
+
+/* Icon tiles: the accent with a gloss on top. */
+[data-base="glass"] .nav-icon,
+[data-base="glass"] .nav-icon.folder,
+[data-base="glass"] .head-icon {
+  border-radius: 50%;
+  background:
+    radial-gradient(120% 90% at 30% 0%, rgba(255, 255, 255, 0.55), transparent 55%),
+    var(--accent);
+  color: var(--on-accent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.12),
+    0 4px 12px var(--glass-glow);
+}
+
+[data-base="glass"] .avatar {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+[data-base="glass"] .presence {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px var(--glass-fill-strong);
+}
+
+[data-base="glass"] .section-head {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+[data-base="glass"] .badge {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 2px 8px var(--glass-glow);
+}
+
+[data-base="glass"] .sidebar-foot {
+  border-top: 0;
+  gap: 8px;
+}
+
+[data-base="glass"] .foot-btn {
+  border-radius: 999px;
+  color: var(--text);
+  background: var(--glass-fill-soft);
+  transition:
+    background var(--t-fast),
+    transform var(--t-med) var(--ease-emph);
+}
+
+[data-base="glass"] .foot-btn:hover,
+[data-base="glass"] .foot-btn.active {
+  background: var(--glass-fill-strong);
+  color: var(--text);
+}
+
+[data-base="glass"] .foot-btn:active {
+  transform: scale(0.95);
+}
+
+/* ---- content ---- */
+
+[data-base="glass"] .chat-head,
+[data-base="glass"] .settings-head {
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+}
+
+[data-base="glass"] .tool {
+  border-radius: 999px;
+  transition:
+    background var(--t-fast),
+    transform var(--t-med) var(--ease-emph);
+}
+
+[data-base="glass"] .tool:not(:disabled):hover,
+[data-base="glass"] .tool.pressed,
+[data-base="glass"] .tool.trust.on {
+  background: var(--glass-fill-strong);
+}
+
+[data-base="glass"] .tool:not(:disabled):active {
+  transform: scale(0.94);
+}
+
+[data-base="glass"] .day {
+  border: 0;
+  border-radius: 999px;
+  background: var(--glass-fill-strong);
+  backdrop-filter: blur(12px);
+}
+
+[data-base="glass"] .row .bubble {
+  border-radius: 20px;
+}
+
+[data-base="glass"] .row.in .bubble {
+  background: var(--bubble-in);
+  border: 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+[data-base="glass"] .row.out .bubble {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 60%),
+    var(--accent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 4px 14px var(--glass-glow);
+}
+
+[data-base="glass"] .transfer {
+  border: 0;
+  border-radius: 20px;
+  background: var(--glass-fill-strong);
+}
+
+[data-base="glass"] .row.out .transfer {
+  background: var(--glass-fill-strong);
+}
+
+[data-base="glass"] .transfer-icon {
+  border-radius: 50%;
+}
+
+[data-base="glass"] .progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--glass-fill-soft);
+}
+
+[data-base="glass"] .progress-bar {
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), color-mix(in oklab, var(--accent) 60%, #fff));
+}
+
+[data-base="glass"] .composer {
+  border: 0;
+  border-radius: 999px;
+  padding: 5px 5px 5px 10px;
+  background: var(--glass-fill-strong);
+  backdrop-filter: blur(24px) saturate(1.6);
+  box-shadow: var(--shadow);
+  transition: box-shadow var(--t-med) var(--ease-out);
+}
+
+[data-base="glass"] .composer:focus-within {
+  box-shadow:
+    var(--shadow),
+    0 0 0 3px color-mix(in oklab, var(--accent) 35%, transparent);
+}
+
+[data-base="glass"] .send {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background:
+    radial-gradient(120% 90% at 30% 0%, rgba(255, 255, 255, 0.5), transparent 55%),
+    var(--accent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 4px 12px var(--glass-glow);
+  transition:
+    transform var(--t-med) var(--ease-emph),
+    opacity var(--t-fast);
+}
+
+[data-base="glass"] .send:not(:disabled):hover {
+  background:
+    radial-gradient(120% 90% at 30% 0%, rgba(255, 255, 255, 0.6), transparent 55%),
+    var(--accent);
+  transform: scale(1.06);
+}
+
+[data-base="glass"] .send:not(:disabled):active {
+  transform: scale(0.9);
+}
+
+[data-base="glass"] .emoji-toggle {
+  border-radius: 50%;
+}
+
+/* ---- controls ---- */
+
+[data-base="glass"] .btn {
+  border-radius: 999px;
+  background: var(--glass-fill-strong);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition:
+    background var(--t-fast),
+    transform var(--t-med) var(--ease-emph),
+    opacity var(--t-fast);
+}
+
+[data-base="glass"] .btn.primary {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 70%),
+    var(--accent);
+  color: var(--on-accent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 4px 14px var(--glass-glow);
+}
+
+[data-base="glass"] .btn.primary:not(:disabled):hover {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0) 70%),
+    var(--accent);
+}
+
+[data-base="glass"] .btn.danger {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0) 70%),
+    var(--danger);
+  color: #fff;
+}
+
+[data-base="glass"] .btn.ghost {
+  background: transparent;
+  box-shadow: none;
+}
+
+[data-base="glass"] .btn.ghost:hover {
+  background: var(--glass-fill-soft);
+}
+
+[data-base="glass"] .btn:not(:disabled):active {
+  transform: scale(0.95);
+}
+
+[data-base="glass"] .card {
+  border: 0;
+  border-radius: calc(var(--r-lg) - 4px);
+  background: var(--glass-fill-soft);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+[data-base="glass"] .segmented {
+  border: 0;
+  border-radius: 999px;
+  padding: 3px;
+  background: color-mix(in oklab, var(--text) 8%, transparent);
+}
+
+[data-base="glass"] .segmented button {
+  border-radius: 999px;
+  transition:
+    background var(--t-fast),
+    color var(--t-fast),
+    transform var(--t-med) var(--ease-emph);
+}
+
+[data-base="glass"] .segmented button.on {
+  background: var(--glass-fill-strong);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+[data-base="glass"] .segmented button:not(:disabled):active {
+  transform: scale(0.94);
+}
+
+/* iOS-like switch: a capsule track and a glossy knob that stretches while held. */
+[data-base="glass"] .switch {
+  width: 48px;
+  height: 28px;
+}
+
+[data-base="glass"] .switch span {
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--text) 16%, transparent);
+  transition: background var(--t-med);
+}
+
+[data-base="glass"] .switch span::after {
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff, #f1f3f7);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+  transition:
+    transform var(--t-med) var(--ease-emph),
+    width var(--t-fast) var(--ease-out);
+}
+
+[data-base="glass"] .switch input:active + span::after {
+  width: 30px;
+}
+
+[data-base="glass"] .switch input:checked + span {
+  background: var(--accent);
+}
+
+[data-base="glass"] .switch input:checked + span::after {
+  transform: translateX(20px);
+}
+
+[data-base="glass"] .switch input:checked:active + span::after {
+  transform: translateX(14px);
+}
+
+[data-base="glass"] .inline-form input,
+[data-base="glass"] .wide-input,
+[data-base="glass"] .ed-field :is(input:not([type]), textarea),
+[data-base="glass"] .color-pair input:not([type="color"]),
+[data-base="glass"] .emoji-search {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--glass-fill-soft);
+}
+
+[data-base="glass"] :is(.inline-form input, .wide-input, .emoji-search):focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 25%, transparent);
+}
+
+[data-base="glass"] select {
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background-color: var(--glass-fill-strong);
+  color: var(--text);
+}
+
+[data-base="glass"] select option {
+  background: var(--bg);
+  color: var(--text);
+}
+
+[data-base="glass"] .overlay {
+  background: color-mix(in oklab, var(--bg) 20%, transparent);
+  backdrop-filter: blur(3px);
+}
+
+[data-base="glass"] .modal {
+  border: 0;
+  border-radius: 28px;
+  padding: 20px 22px 18px;
+  background: var(--glass-fill);
+  backdrop-filter: blur(40px) saturate(1.8);
+  box-shadow:
+    var(--shadow-lg),
+    inset 0 1px 0 var(--glass-hi);
+}
+
+[data-base="glass"] .modal {
+  animation: glass-pop var(--t-slow) var(--ease-emph);
+}
+
+@keyframes glass-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+[data-base="glass"] .icon-btn {
+  border-radius: 50%;
+}
+
+[data-base="glass"] .menu {
+  border: 0;
+  border-radius: 20px;
+  padding: 6px;
+  background: var(--glass-fill);
+  backdrop-filter: blur(30px) saturate(1.8);
+  box-shadow: var(--shadow-lg);
+  animation: glass-pop var(--t-med) var(--ease-emph);
+}
+
+[data-base="glass"] .menu button {
+  border-radius: 14px;
+}
+
+[data-base="glass"] .menu button:hover {
+  background: var(--glass-fill-strong);
+}
+
+[data-base="glass"] .emoji-picker {
+  border: 0;
+  border-radius: 26px;
+  background: var(--glass-fill);
+  backdrop-filter: blur(34px) saturate(1.8);
+  animation: glass-pop var(--t-med) var(--ease-emph);
+  transform-origin: 18px 100%;
+}
+
+[data-base="glass"] .emoji-head {
+  background: transparent;
+  backdrop-filter: blur(16px);
+}
+
+[data-base="glass"] .emoji-tab {
+  border-radius: 999px;
+}
+
+[data-base="glass"] .emoji-tab.on {
+  background: var(--glass-fill-strong);
+}
+
+[data-base="glass"] .screen-bar {
+  background: transparent;
+  border: 0;
+  gap: 8px;
+  padding: 10px 14px 0;
+}
+
+[data-base="glass"] .sb-row {
+  border-radius: 18px;
+  background: var(--glass-fill-strong) !important;
+}
+
+[data-base="glass"] .browser,
+[data-base="glass"] .requests {
+  border: 0;
+  border-radius: 20px;
+  background: var(--glass-fill-soft);
+}
+
+[data-base="glass"] .source {
+  border: 0;
+  border-radius: 999px;
+  background: var(--glass-fill-soft);
+}
+
+[data-base="glass"] .source.on {
+  background: var(--glass-fill-strong);
+  color: var(--accent);
+}
+
+[data-base="glass"] .files tbody tr:hover {
+  background: var(--glass-fill-soft);
+}
+
+[data-base="glass"] .theme-pick:hover {
+  background: var(--glass-fill-soft);
+}
+
+[data-base="glass"] .theme-card.on .theme-pick {
+  border-color: transparent;
+  background: var(--glass-fill-strong);
+}
+
+[data-base="glass"] .drawer {
+  border-left: 0;
+  background: var(--glass-fill);
+  backdrop-filter: blur(40px) saturate(1.8);
+}
+
+[data-base="glass"] ::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, var(--text) 22%, transparent);
+}
+
+/* ---- preview card ---- */
+
+.tp[data-tp-base="glass"] {
+  background: var(--glass-wall);
+  border-color: transparent;
+}
+
+.tp[data-tp-base="glass"] :is(.tp-side, .tp-main) {
+  background: var(--glass-fill);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 0 0 1px var(--border);
+  backdrop-filter: blur(8px);
+}
+
+.tp[data-tp-base="glass"] .tp-row.on {
+  background: var(--glass-fill-strong);
+  box-shadow: none;
+}

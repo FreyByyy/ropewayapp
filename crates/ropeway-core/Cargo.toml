@@ -1,0 +1,26 @@
+[package]
+name = "ropeway-core"
+description = "Platform-independent core of Ropeway: discovery, encrypted transport, chat"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow = "1"
+dirs = "7"
+hex = "0.4"
+hostname = "0.4"
+if-addrs = "0.15"
+quinn = { version = "0.11", default-features = false, features = ["runtime-tokio", "rustls-ring", "log"] }
+rcgen = { version = "0.14", default-features = false, features = ["crypto", "ring", "pem"] }
+ring = "0.17"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "logging"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+socket2 = { version = "0.6", features = ["all"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "sync", "time", "fs", "io-util"] }
+tracing = "0.1"
+uuid = { version = "1", features = ["v4", "serde"] }
+
+[target.'cfg(not(target_os = "android"))'.dependencies]
+trash = "5"

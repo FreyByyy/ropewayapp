@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Received files and the shared folder, opened in other apps. -->
+  <external-path name="storage" path="." />
+  <cache-path name="cache" path="." />
+  <files-path name="data" path="." />
+</paths>
