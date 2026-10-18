@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { api, type PeerView } from "../api";
 import { useI18n } from "../i18n";
-import { IconX } from "../icons";
+import { IconAlert, IconX } from "../icons";
+import { duplicateNames, isDuplicate } from "../identity";
 
 export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
   useEffect(() => {
@@ -25,8 +26,20 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
   );
 }
 
-export function TrustModal({ peer, myCode, onClose }: { peer: PeerView; myCode: string; onClose: () => void }) {
+export function TrustModal({
+  peer,
+  peers,
+  myCode,
+  onClose,
+}: {
+  peer: PeerView;
+  /** Every known device, to warn about another one with the same name. */
+  peers: PeerView[];
+  myCode: string;
+  onClose: () => void;
+}) {
   const { t } = useI18n();
+  const sameName = isDuplicate(duplicateNames(peers), peer.name);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const trusting = !peer.trusted;
@@ -47,6 +60,12 @@ export function TrustModal({ peer, myCode, onClose }: { peer: PeerView; myCode: 
       <p className="modal-text">{trusting ? t("trustBody") : t("untrustBody")}</p>
       {trusting && (
         <>
+          {sameName && (
+            <p className="same-name-note">
+              <IconAlert size={14} />
+              {t("trustSameName")}
+            </p>
+          )}
           <p className="modal-text dim">{t("trustCheck")}</p>
           <div className="code-compare">
             <span className="mono big-code">{peer.code}</span>

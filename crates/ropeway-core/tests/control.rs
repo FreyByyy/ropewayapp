@@ -174,6 +174,7 @@ async fn requester_may_change_video_but_not_send_input() {
     b.connect_address(&format!("127.0.0.1:{}", a.port())).await.unwrap();
     tokio::time::sleep(Duration::from_millis(200)).await;
     a.set_trusted(b.id(), true).unwrap();
+    a.set_trusted_view_without_asking(true).unwrap();
     let mut b_events = b.subscribe();
 
     b.ask_screen(a.id(), false).unwrap();

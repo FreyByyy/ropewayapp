@@ -10,6 +10,8 @@ use std::path::Path;
 use anyhow::{Context, Result};
 use rustls::pki_types::{CertificateDer, PrivatePkcs8KeyDer};
 
+use crate::fs_util::{make_private, write_private};
+
 const CERT_FILE: &str = "identity.cert.der";
 const KEY_FILE: &str = "identity.key.der";
 
@@ -38,10 +40,13 @@ impl Identity {
             let cert = params.self_signed(&key_pair)?;
             let cert = cert.der().to_vec();
             let key = key_pair.serialize_der();
-            fs::write(&key_path, &key).context("saving device key")?;
-            fs::write(&cert_path, &cert).context("saving device certificate")?;
+            // Whoever reads the key can pose as this device: owner only.
+            write_private(&key_path, &key).context("saving device key")?;
+            write_private(&cert_path, &cert).context("saving device certificate")?;
             (cert, key)
         };
+        // Data folders from older versions were readable by other users.
+        make_private(dir, &[&key_path, &cert_path]);
 
         let id = fingerprint(&cert);
         Ok(Self {

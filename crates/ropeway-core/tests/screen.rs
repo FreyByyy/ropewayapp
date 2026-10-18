@@ -191,8 +191,23 @@ async fn asking_to_see_a_screen_needs_approval_unless_trusted() {
     .await;
     assert!(!accepted);
 
-    // Trusted: shared right away, no question on A's side.
+    // Trusted: A is still asked, unless A lets trusted devices watch.
     a.set_trusted(b.id(), true).unwrap();
+    b.ask_screen(a.id(), false).unwrap();
+    let ask = wait_for(&mut a_events, |e| match e {
+        Event::Notice(Notice::ScreenAsked { ask }) => Some(ask),
+        _ => None,
+    })
+    .await;
+    assert!(a.screen().sharing.is_empty());
+    a.answer_screen_ask(&ask.id, false).unwrap();
+    wait_for(&mut b_events, |e| match e {
+        Event::Notice(Notice::ScreenAskAnswered { .. }) => Some(()),
+        _ => None,
+    })
+    .await;
+
+    a.set_trusted_view_without_asking(true).unwrap();
     b.ask_screen(a.id(), false).unwrap();
     let share = wait_for(&mut b_events, |e| match e {
         Event::Notice(Notice::ScreenInvite { share }) => Some(share),
@@ -202,6 +217,48 @@ async fn asking_to_see_a_screen_needs_approval_unless_trusted() {
     assert!(share.requested);
     assert!(a.screen().asks.is_empty());
     assert_eq!(a.screen().sharing.len(), 1);
+}
+
+/// Whether a viewer's stream ends within a few seconds.
+async fn ends(rx: &mut tokio::sync::mpsc::Receiver<Vec<u8>>) -> bool {
+    tokio::time::timeout(Duration::from_secs(5), async {
+        while rx.recv().await.is_some() {}
+    })
+    .await
+    .is_ok()
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn revoking_trust_ends_screen_viewing() {
+    let (a, b) = pair().await;
+    let mut b_events = b.subscribe();
+    a.set_trusted(b.id(), true).unwrap();
+    a.set_trusted_view_without_asking(true).unwrap();
+
+    // A share made for B's ask.
+    b.ask_screen(a.id(), false).unwrap();
+    let asked = wait_for(&mut b_events, |e| match e {
+        Event::Notice(Notice::ScreenInvite { share }) => Some(share),
+        _ => None,
+    })
+    .await;
+    let mut asked_rx = b.watch_screen(a.id(), &asked.id).await.unwrap().packets;
+    assert!(asked_rx.recv().await.is_some());
+
+    // And one A started for B by hand.
+    let manual = a.start_screen_share(options(), vec![b.id().to_owned()], false).unwrap();
+    let mut manual_rx = b.watch_screen(a.id(), &manual).await.unwrap().packets;
+    assert!(manual_rx.recv().await.is_some());
+
+    a.set_trusted(b.id(), false).unwrap();
+    assert!(ends(&mut asked_rx).await, "the asked-for share kept streaming");
+    assert!(ends(&mut manual_rx).await, "the manual share kept streaming");
+    // The share made for B's ask is gone; the other one stays, without B.
+    let sharing = a.screen().sharing;
+    assert_eq!(sharing.len(), 1);
+    assert_eq!(sharing[0].id, manual);
+    assert!(sharing[0].invited.is_empty());
+    assert!(b.watch_screen(a.id(), &manual).await.is_err());
 }
 
 #[tokio::test(flavor = "multi_thread")]

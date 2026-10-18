@@ -11,6 +11,8 @@ import { VideoFields } from "./VideoFields";
 import { AppearanceCard } from "./AppearanceCard";
 import type { AppearanceApi } from "../theme/useAppearance";
 import { Avatar } from "./Avatar";
+import { UpdatesCard } from "./UpdateModals";
+import type { Updates } from "../updates";
 
 interface Props {
   me: MeView;
@@ -19,10 +21,11 @@ interface Props {
   peers: PeerView[];
   dispatch: Dispatch;
   appearance: AppearanceApi;
+  updates: Updates;
   onUntrust: (peer: PeerView) => void;
 }
 
-export function SettingsView({ me, settings, folders, peers, dispatch, onUntrust, appearance }: Props) {
+export function SettingsView({ me, settings, folders, peers, dispatch, onUntrust, appearance, updates }: Props) {
   const { t } = useI18n();
   const [name, setName] = useState(settings.device_name);
   const [saved, setSaved] = useState(false);
@@ -275,7 +278,26 @@ export function SettingsView({ me, settings, folders, peers, dispatch, onUntrust
               ))}
             </ul>
           )}
+          <div className="folder-row toggle-row">
+            <div className="folder-text">
+              <span className="folder-title">{t("trustedViewScreen")}</span>
+              <span className="field-hint">{t("trustedViewScreenHint")}</span>
+            </div>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={settings.trusted_view_without_asking}
+                onChange={async (e) => {
+                  await api.setTrustedViewWithoutAsking(e.target.checked);
+                  await reload();
+                }}
+              />
+              <span />
+            </label>
+          </div>
         </div>
+
+        <UpdatesCard updates={updates} version={version} />
 
         <div className="card">
           <span className="field-label">{t("network")}</span>

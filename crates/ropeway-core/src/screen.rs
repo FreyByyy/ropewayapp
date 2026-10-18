@@ -19,6 +19,7 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::{anyhow, bail, Result};
 use serde::{Deserialize, Serialize};
+use tokio::io::AsyncReadExt;
 use tokio::sync::mpsc;
 
 use crate::node::{now_ms, Event, Node, Notice};
@@ -536,6 +537,39 @@ impl Node {
         }
     }
 
+    /// A device lost its trust: it stops seeing this screen. Shares started
+    /// for its ask end; it is dropped from the other private shares it was
+    /// invited to (public shares stay open to everyone).
+    pub(crate) fn revoke_screen_access(&self, peer: &str) {
+        let (requested, dropped): (Vec<String>, Vec<String>) = {
+            let mut state = self.inner.screen.lock().unwrap();
+            let requested = state
+                .sessions
+                .iter()
+                .filter(|(_, s)| s.requested_by.as_deref() == Some(peer))
+                .map(|(id, _)| id.clone())
+                .collect::<Vec<_>>();
+            let mut dropped = Vec::new();
+            for (id, s) in state.sessions.iter_mut() {
+                if s.public || s.requested_by.as_deref() == Some(peer) || !s.invited.remove(peer) {
+                    continue;
+                }
+                s.controllers.remove(peer);
+                // Dropping a viewer's sender ends its stream.
+                s.shared.viewers.lock().unwrap().retain(|_, v| v.peer != peer);
+                dropped.push(id.clone());
+            }
+            (requested, dropped)
+        };
+        for id in &requested {
+            self.stop_screen_share(id);
+        }
+        for id in dropped {
+            self.notify_peer(peer, Request::ScreenEnded { session: id });
+        }
+        self.emit_screen();
+    }
+
     /// Asks a device to show its screen to this device, and with `control`
     /// to let this device control it.
     pub fn ask_screen(&self, peer: &str, control: bool) -> Result<()> {
@@ -631,11 +665,13 @@ impl Node {
                 if len > MAX_PACKET {
                     break;
                 }
-                let mut packet = Vec::with_capacity(HEADER_LEN + len);
+                // The buffer grows as data arrives instead of trusting the
+                // announced length, as in `read_frame`.
+                let mut packet = Vec::with_capacity(HEADER_LEN + len.min(64 * 1024));
                 packet.extend_from_slice(&header);
-                packet.resize(HEADER_LEN + len, 0);
-                if recv.read_exact(&mut packet[HEADER_LEN..]).await.is_err() {
-                    break;
+                match (&mut recv).take(len as u64).read_to_end(&mut packet).await {
+                    Ok(n) if n == len => {}
+                    _ => break,
                 }
                 if tx.send(packet).await.is_err() {
                     break;
@@ -714,9 +750,9 @@ impl Node {
         if self.inner.screen.lock().unwrap().provider.is_none() {
             return Response::Error { message: "screen sharing is not available on this device".into() };
         }
-        if self.is_trusted(peer) && !control {
-            // Trusted devices may watch without confirmation; the sharing
-            // banner still shows who is watching. Control always asks.
+        if self.is_trusted(peer) && !control && self.settings().trusted_view_without_asking {
+            // The user let trusted devices watch without confirmation; the
+            // sharing banner still shows who is watching. Control always asks.
             if let Err(e) = self.accept_ask(peer, &id, control) {
                 tracing::warn!("could not start screen sharing: {e}");
             }

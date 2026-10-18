@@ -8,6 +8,7 @@
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+use ropeway_core::fs_util::write_private;
 use ropeway_core::Node;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -86,23 +87,9 @@ fn random_hex() -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
 
-/// Writes a file only the current user can read.
-fn write_private(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
-    if let Some(dir) = path.parent() {
-        std::fs::create_dir_all(dir)?;
-    }
-    #[cfg(unix)]
-    {
-        use std::io::Write;
-        use std::os::unix::fs::OpenOptionsExt;
-        let mut f = std::fs::OpenOptions::new().write(true).create(true).truncate(true).mode(0o600).open(path)?;
-        f.write_all(bytes)
-    }
-    #[cfg(not(unix))]
-    {
-        // The data folder is in the user's profile, private by default.
-        std::fs::write(path, bytes)
-    }
+/// Compares tokens in constant time, so timing tells nothing about them.
+fn same_secret(a: &str, b: &str) -> bool {
+    a.len() == b.len() && a.bytes().zip(b.bytes()).fold(0u8, |acc, (x, y)| acc | (x ^ y)) == 0
 }
 
 async fn handle(stream: TcpStream, node: Node, token: &str, on_quit: Arc<dyn Fn() + Send + Sync>) -> anyhow::Result<()> {
@@ -110,7 +97,7 @@ async fn handle(stream: TcpStream, node: Node, token: &str, on_quit: Arc<dyn Fn(
     let mut lines = BufReader::new(read).lines();
     let Some(line) = lines.next_line().await? else { return Ok(()) };
     let request: Request = serde_json::from_str(&line)?;
-    if request.token != token {
+    if !same_secret(&request.token, token) {
         write.write_all(b"{\"ok\":false,\"error\":\"access denied\"}\n").await?;
         return Ok(());
     }
@@ -164,6 +151,7 @@ async fn run(node: &Node, cmd: &str, a: &Value) -> anyhow::Result<Value> {
             "me": node.me(),
             "language": node.settings().language,
             "folders": node.folders(),
+            "trusted_view_without_asking": node.settings().trusted_view_without_asking,
         }),
         "peers" => json!(node.peers()),
         "history" => json!(node.history(arg(a, "conversation")?)),
@@ -192,6 +180,7 @@ async fn run(node: &Node, cmd: &str, a: &Value) -> anyhow::Result<Value> {
         "set_shared_dir" => json!(node.set_shared_dir(opt_path(a, "path"))?),
         "set_sharing" => json!(node.set_sharing(flag(a, "enabled")?)?),
         "set_trusted_only" => json!(node.set_shared_trusted_only(flag(a, "enabled")?)?),
+        "set_trusted_view" => json!(node.set_trusted_view_without_asking(flag(a, "enabled")?)?),
         "connect" => json!(node.connect_address(arg(a, "address")?).await?),
         "quit" => Value::Null,
         other => anyhow::bail!("unknown command: {other}"),

@@ -12,6 +12,8 @@ import { SharedView } from "./components/SharedView";
 import { ScreenBar } from "./components/ScreenBar";
 import { ShareDialog } from "./components/ShareDialog";
 import { AddIpModal, TrustModal } from "./components/Modals";
+import { UpdateModal, WhatsNewModal } from "./components/UpdateModals";
+import { useUpdates } from "./updates";
 import { NavRail, type RailSection } from "./components/NavRail";
 import { IconSetContext } from "./icons";
 import { useAppearance } from "./theme/useAppearance";
@@ -49,6 +51,7 @@ export default function App() {
   const active = view.kind === "chat" && (!IS_MOBILE || mobileMain) ? view.conversation : null;
   const { state, dispatch } = useRopeway(active);
   const appearance = useAppearance();
+  const updates = useUpdates();
   const [lastChat, setLastChat] = useState(GENERAL);
   const [compact, setCompact] = useState(() => {
     try {
@@ -279,6 +282,7 @@ export default function App() {
               peers={state.peers}
               dispatch={dispatch}
               appearance={appearance}
+              updates={updates}
               onUntrust={(p) => setModal({ kind: "trust", peer: { ...p, trusted: true } })}
             />
           ) : view.kind === "shared" ? (
@@ -330,6 +334,7 @@ export default function App() {
       {modal?.kind === "trust" && (
         <TrustModal
           peer={modal.peer}
+          peers={state.peers}
           myCode={state.me.code}
           onClose={() => {
             closeModal();
@@ -381,6 +386,8 @@ export default function App() {
           </div>
         </Modal>
       )}
+      {!modal && updates.whatsNew && <WhatsNewModal version={updates.whatsNew} onClose={updates.closeWhatsNew} />}
+      {!modal && !updates.whatsNew && updates.offer && <UpdateModal info={updates.offer} updates={updates} />}
       {modal?.kind === "install-error" && (
         <Modal title={i18n.t("installTheme")} onClose={closeModal}>
           <p className="modal-text">{i18n.t("themeInvalid")}</p>

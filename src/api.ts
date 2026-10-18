@@ -53,7 +53,18 @@ export interface Settings {
   trusted: { id: string; name: string }[];
   manual_peers: string[];
   screen_video: VideoSettings;
+  /** Trusted devices may watch the screen without being asked. */
+  trusted_view_without_asking: boolean;
   appearance: unknown;
+}
+
+export interface UpdateInfo {
+  version: string;
+  /** Release notes in the CHANGELOG.md format. */
+  notes: string;
+  /** Ropeway can install it itself; otherwise the releases page is offered. */
+  can_install: boolean;
+  page: string;
 }
 
 export interface ConversationSummary {
@@ -262,6 +273,10 @@ export const api = {
   setSharedDir: (path: string | null) => invoke<void>("set_shared_dir", { path }),
   setSharing: (enabled: boolean) => invoke<void>("set_sharing", { enabled }),
   setSharedTrustedOnly: (enabled: boolean) => invoke<void>("set_shared_trusted_only", { enabled }),
+  checkUpdate: () => invoke<UpdateInfo | null>("check_update"),
+  installUpdate: () => invoke<void>("install_update"),
+  openReleasesPage: () => invoke<void>("open_releases_page"),
+  setTrustedViewWithoutAsking: (enabled: boolean) => invoke<void>("set_trusted_view_without_asking", { enabled }),
 
   myShared: () => invoke<SharedListing>("get_my_shared"),
   peerShared: (peer: string) => invoke<SharedListing>("get_peer_shared", { peer }),

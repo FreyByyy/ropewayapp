@@ -119,6 +119,7 @@ impl<T: Serialize + DeserializeOwned> ListStore<T> {
 
 /// Whether any part of `path` below `root` is a symbolic link or junction.
 /// The listing hides them, so peers must not reach through them either.
+/// Hard links are not links in this sense; see [`fs_util::has_other_names`].
 fn has_link(root: &std::path::Path, path: &std::path::Path) -> bool {
     let Ok(rel) = path.strip_prefix(root) else { return true };
     let mut current = root.to_path_buf();
@@ -182,15 +183,16 @@ impl Node {
         Ok(())
     }
 
-    /// A path in this device's shared folder that a peer named. Links that
-    /// lead out of the folder are refused.
+    /// A path in this device's shared folder that a peer named. Symbolic
+    /// links, junctions and files with hard links are refused: any of them
+    /// may lead out of the folder.
     fn shared_path(&self, peer: &str, rel: &str) -> Result<(PathBuf, PathBuf)> {
         self.peer_may_use_shared(peer)?;
         let root = self.shared_root().ok_or_else(|| anyhow!("shared folder is turned off"))?;
         let path = join_safe(&root, rel).ok_or_else(|| anyhow!("invalid path"))?;
         let real_root = std::fs::canonicalize(&root).map_err(|_| anyhow!("shared folder is missing"))?;
         let real = std::fs::canonicalize(&path).map_err(|_| anyhow!("file not found"))?;
-        if !real.starts_with(&real_root) || has_link(&root, &path) {
+        if !real.starts_with(&real_root) || has_link(&root, &path) || fs_util::has_other_names(&path) {
             bail!("file not found");
         }
         Ok((root, path))
@@ -682,6 +684,7 @@ mod tests {
             .await
             .unwrap();
         node.set_shared_dir(Some(dir.join("shared"))).unwrap();
+        node.set_shared_trusted_only(false).unwrap();
         std::fs::create_dir_all(dir.join("secret")).unwrap();
         std::fs::write(dir.join("secret/passwords.txt"), b"secret").unwrap();
         std::fs::write(dir.join("shared/ok.txt"), b"ok").unwrap();
@@ -697,6 +700,9 @@ mod tests {
         assert!(node.shared_file(peer, "ok.txt").is_ok());
         assert!(node.shared_file(peer, "outside/passwords.txt").is_err());
         assert!(node.shared_file(peer, "../secret/passwords.txt").is_err());
+        // A hard link is another name for the same file, outside the folder.
+        std::fs::hard_link(dir.join("secret/passwords.txt"), dir.join("shared/linked.txt")).unwrap();
+        assert!(node.shared_file(peer, "linked.txt").is_err());
         node.shutdown().await;
     }
 }

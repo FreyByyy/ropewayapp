@@ -33,6 +33,7 @@ windows-sys = { version = "0.61", features = ["Win32_System_Console"] }
 ropeway-media = { path = "../crates/ropeway-media" }
 tauri-plugin-autostart = "2"
 tauri-plugin-single-instance = "2"
+tauri-plugin-updater = "2"
 # Terminal commands (`ropeway status`, `ropeway send` …) and `ropeway daemon`.
 anyhow = "1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
@@ -44,3 +45,7 @@ tokio = { version = "1", features = ["rt-multi-thread", "net", "io-util", "macro
 [target.'cfg(target_os = "android")'.dependencies]
 anyhow = "1"
 jni = "0.21"
+# Updates: the APK is downloaded and its signature checked before installing.
+base64 = "0.22"
+minisign-verify = "0.2"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }

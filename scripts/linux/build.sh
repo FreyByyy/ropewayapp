@@ -19,7 +19,7 @@ npm ci --no-audit --no-fund
 npx tauri build --bundles appimage,deb,rpm
 
 version=$(node -p "require('./src-tauri/tauri.conf.json').version")
-out="$src/releases"
+out="$src/releases/$version"
 mkdir -p "$out"
 b="target/release/bundle"
 cp "$b"/appimage/*.AppImage "$out/Ropeway-$version-linux-x86_64.AppImage"

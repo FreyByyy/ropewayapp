@@ -46,7 +46,7 @@ pub fn sanitize_rel(path: &str) -> Option<String> {
         }
         let mut name: String = raw
             .chars()
-            .map(|c| if c.is_control() || "<>:\"|?*".contains(c) { '_' } else { c })
+            .map(|c| if c.is_control() || is_deceptive_char(c) || "<>:\"|?*".contains(c) { '_' } else { c })
             .collect();
         // Windows silently drops trailing dots and spaces.
         while name.ends_with('.') || name.ends_with(' ') {
@@ -67,6 +67,41 @@ pub fn sanitize_rel(path: &str) -> Option<String> {
         return None;
     }
     Some(parts.join("/"))
+}
+
+/// Invisible characters that reorder or hide text, so `report\u{202E}fdp.exe`
+/// would show as `reportexe.pdf`. Joiners used in emoji and some scripts
+/// (U+200C, U+200D) are not among them.
+pub fn is_deceptive_char(c: char) -> bool {
+    matches!(
+        c,
+        '\u{061C}' | '\u{180E}' | '\u{200B}' | '\u{200E}' | '\u{200F}' | '\u{202A}'..='\u{202E}' | '\u{2060}'..='\u{2064}'
+            | '\u{2066}'..='\u{2069}' | '\u{FEFF}'
+    )
+}
+
+/// Whether a file has other names on the disk (hard links). One of them may
+/// lie outside a shared folder, so such files are not served.
+pub fn has_other_names(path: &Path) -> bool {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        fs::metadata(path).map(|m| m.is_file() && m.nlink() > 1).unwrap_or(false)
+    }
+    #[cfg(windows)]
+    {
+        use std::os::windows::io::AsRawHandle;
+        use windows_sys::Win32::Storage::FileSystem::{GetFileInformationByHandle, BY_HANDLE_FILE_INFORMATION};
+        let Ok(file) = fs::File::open(path) else { return false };
+        let mut info: BY_HANDLE_FILE_INFORMATION = unsafe { std::mem::zeroed() };
+        let ok = unsafe { GetFileInformationByHandle(file.as_raw_handle() as _, &mut info) };
+        ok != 0 && info.dwFileAttributes & 0x10 == 0 && info.nNumberOfLinks > 1
+    }
+    #[cfg(not(any(unix, windows)))]
+    {
+        let _ = path;
+        false
+    }
 }
 
 fn is_reserved_name(name: &str) -> bool {
@@ -151,6 +186,45 @@ pub fn mark_from_network(path: &Path) {
     }
     #[cfg(not(windows))]
     let _ = path;
+}
+
+/// Writes a file only this user may read (0600 on Unix), for the device key
+/// and other secrets. An existing file gets its permissions tightened too.
+pub fn write_private(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
+    if let Some(dir) = path.parent() {
+        fs::create_dir_all(dir)?;
+    }
+    #[cfg(unix)]
+    {
+        use std::io::Write;
+        use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
+        let mut f = fs::OpenOptions::new().write(true).create(true).truncate(true).mode(0o600).open(path)?;
+        // `mode` only applies to a new file.
+        f.set_permissions(fs::Permissions::from_mode(0o600))?;
+        f.write_all(bytes)
+    }
+    #[cfg(not(unix))]
+    {
+        // The data folder is in the user's profile, private by default.
+        fs::write(path, bytes)
+    }
+}
+
+/// Makes a folder (and, on Unix, the files given) readable by this user
+/// only. Repairs data folders created before this was done. Best effort.
+pub fn make_private(dir: &Path, files: &[&Path]) {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = fs::set_permissions(dir, fs::Permissions::from_mode(0o700));
+        for f in files {
+            if f.exists() {
+                let _ = fs::set_permissions(f, fs::Permissions::from_mode(0o600));
+            }
+        }
+    }
+    #[cfg(not(unix))]
+    let _ = (dir, files);
 }
 
 pub fn mtime_ms(meta: &fs::Metadata) -> i64 {
@@ -262,5 +336,9 @@ mod tests {
         assert_eq!(sanitize_rel("con.txt").as_deref(), Some("_con.txt"));
         assert_eq!(sanitize_rel("name. ").as_deref(), Some("name"));
         assert_eq!(sanitize_rel("Отчёт <финал>.docx").as_deref(), Some("Отчёт _финал_.docx"));
+        assert_eq!(sanitize_rel("report\u{202E}fdp.exe").as_deref(), Some("report_fdp.exe"));
+        assert_eq!(sanitize_rel("a\u{200B}b").as_deref(), Some("a_b"));
+        // Emoji sequences keep their joiners.
+        assert_eq!(sanitize_rel("👨\u{200D}👩.txt").as_deref(), Some("👨\u{200D}👩.txt"));
     }
 }

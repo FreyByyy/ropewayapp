@@ -1,5 +1,5 @@
-# Builds the macOS app (universal: Apple Silicon and Intel) as a .dmg.
-# The result is attached to the run as the "Ropeway-macos" artifact.
+# Builds the macOS app (universal: Apple Silicon and Intel): the .dmg and
+# the update package, attached to the run as the "Ropeway-macos" artifact.
 name: macOS
 
 on:
@@ -32,8 +32,18 @@ jobs:
 
       - run: npx tauri build --target universal-apple-darwin --bundles app,dmg
 
+      # The update package is the app in a tarball; it is signed later on
+      # the maintainer's computer (scripts/release.py), the key is not here.
+      - name: Name the files for the release
+        run: |
+          version=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          b=target/universal-apple-darwin/release/bundle
+          mkdir -p out
+          cp "$b"/dmg/*.dmg "out/Ropeway-$version-macos-universal.dmg"
+          tar -czf "out/Ropeway-$version-macos-universal.app.tar.gz" -C "$b/macos" Ropeway.app
+
       - uses: actions/upload-artifact@v4
         with:
           name: Ropeway-macos
-          path: target/universal-apple-darwin/release/bundle/dmg/*.dmg
+          path: out/*
           if-no-files-found: error

@@ -31,6 +31,9 @@ const MAX_OFFER_FILES: usize = 200_000;
 /// Undecided offers kept from one untrusted device, and in total.
 pub(crate) const MAX_WAITING_PER_PEER: usize = 5;
 pub(crate) const MAX_WAITING: usize = 50;
+/// Files in all offers waiting for a decision, so a few huge offers from
+/// untrusted devices cannot fill the memory and the disk.
+const MAX_WAITING_FILES: usize = 200_000;
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -604,8 +607,19 @@ impl Node {
                     .filter(|t| p.is_none_or(|p| t.peer == p))
                     .count()
             };
-            if !self.is_trusted(peer) && (waiting(Some(peer)) >= MAX_WAITING_PER_PEER || waiting(None) >= MAX_WAITING) {
-                return Response::Error { message: "too many offers are waiting for an answer".into() };
+            if !self.is_trusted(peer) {
+                let waiting_files: usize = store
+                    .list
+                    .iter()
+                    .filter(|t| t.direction == Direction::Incoming && t.status == TransferStatus::Pending)
+                    .map(|t| t.files.len())
+                    .sum();
+                if waiting(Some(peer)) >= MAX_WAITING_PER_PEER
+                    || waiting(None) >= MAX_WAITING
+                    || waiting_files + files.len() > MAX_WAITING_FILES
+                {
+                    return Response::Error { message: "too many offers are waiting for an answer".into() };
+                }
             }
         }
 

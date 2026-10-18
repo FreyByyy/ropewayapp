@@ -42,6 +42,11 @@ const MAX_PEERS: usize = 256;
 /// of this many per address, refilled at `RATE_PER_MIN` a minute.
 const RATE_BURST: f64 = 60.0;
 const RATE_PER_MIN: f64 = 30.0;
+/// Files an untrusted device may download from this one at the same time.
+const MAX_FETCHES_UNTRUSTED: usize = 4;
+/// Shared-folder listings built for peers at the same time; each walks the
+/// whole folder.
+const MAX_LISTINGS: usize = 2;
 
 pub struct NodeOptions {
     pub data_dir: PathBuf,
@@ -125,9 +130,21 @@ pub struct Folders {
 struct Peer {
     name: String,
     os: String,
+    /// Where to dial the device.
     addr: Option<SocketAddr>,
+    /// `addr` was proven by a connection with the device's key. An
+    /// unauthenticated announcement then cannot replace it, only suggest
+    /// `hint`, which is tried when `addr` stops answering.
+    verified: bool,
+    hint: Option<SocketAddr>,
     /// Last discovery announcement or hello.
     last_seen: Option<Instant>,
+}
+
+impl Peer {
+    fn new() -> Self {
+        Self { name: String::new(), os: String::new(), addr: None, verified: false, hint: None, last_seen: None }
+    }
 }
 
 pub(crate) struct Inner {
@@ -150,6 +167,9 @@ pub(crate) struct Inner {
     announce_now: Notify,
     /// Request allowance of untrusted addresses (see [`RATE_BURST`]).
     rate: Mutex<HashMap<IpAddr, (f64, Instant)>>,
+    /// Downloads running for each untrusted device (see [`MAX_FETCHES_UNTRUSTED`]).
+    fetching: Mutex<HashMap<String, usize>>,
+    listings: tokio::sync::Semaphore,
     /// Set once by `shutdown`; every background task stops on it.
     pub(crate) stop: watch::Sender<bool>,
     // Lock order: transfers before progress.
@@ -215,6 +235,8 @@ impl Node {
                 delivering: Mutex::new(HashSet::new()),
                 announce_now: Notify::new(),
                 rate: Mutex::new(HashMap::new()),
+                fetching: Mutex::new(HashMap::new()),
+                listings: tokio::sync::Semaphore::new(MAX_LISTINGS),
                 stop: watch::channel(false).0,
                 transfers: Mutex::new(transfers),
                 progress: Mutex::new(HashMap::new()),
@@ -313,6 +335,11 @@ impl Node {
                 s.trusted.push(TrustedDevice { id: id.to_owned(), name });
             }
         })?;
+        if !trusted {
+            // Trust is checked on every request, but a screen being watched
+            // is one long stream: end it now.
+            self.revoke_screen_access(id);
+        }
         self.refresh_presence();
         Ok(())
     }
@@ -329,6 +356,11 @@ impl Node {
 
     pub fn set_shared_trusted_only(&self, enabled: bool) -> Result<()> {
         self.update_settings(|s| s.shared_trusted_only = enabled)
+    }
+
+    /// Whether trusted devices may watch this screen without being asked.
+    pub fn set_trusted_view_without_asking(&self, enabled: bool) -> Result<()> {
+        self.update_settings(|s| s.trusted_view_without_asking = enabled)
     }
 
     pub fn set_download_dir(&self, dir: Option<PathBuf>) -> Result<()> {
@@ -561,7 +593,7 @@ impl Node {
     }
 
     fn on_chat(&self, peer: &str, wire: ChatWire) {
-        let mut text = wire.text;
+        let mut text = clean_text(&wire.text);
         if text.len() > MAX_TEXT {
             let mut cut = MAX_TEXT;
             while !text.is_char_boundary(cut) {
@@ -674,7 +706,12 @@ impl Node {
             .map_err(|_| anyhow!("request was not sent in time"))??;
         let costly = matches!(
             request,
-            Request::Chat(_) | Request::Offer(_) | Request::Change(_) | Request::ScreenAsk { .. } | Request::ScreenInvite { .. }
+            Request::Chat(_)
+                | Request::Offer(_)
+                | Request::Change(_)
+                | Request::ScreenAsk { .. }
+                | Request::ScreenInvite { .. }
+                | Request::SharedList
         );
         if costly && !self.is_trusted(peer) && !self.take_allowance(remote_ip) {
             write_frame(&mut send, &Response::Error { message: "too many requests, try again later".into() }).await?;
@@ -703,8 +740,18 @@ impl Node {
                 self.on_transfer_cancel(peer, &id);
                 Response::Ok
             }
-            Request::Fetch { target, offset } => return self.serve_fetch(peer, target, offset, send).await,
-            Request::SharedList => self.on_shared_list(peer).await,
+            Request::Fetch { target, offset } => {
+                let Some(_slot) = self.fetch_slot(peer) else {
+                    write_frame(&mut send, &Response::Error { message: "too many downloads at once, try again later".into() }).await?;
+                    send.finish()?;
+                    return Ok(());
+                };
+                return self.serve_fetch(peer, target, offset, send).await;
+            }
+            Request::SharedList => {
+                let _permit = self.inner.listings.acquire().await?;
+                self.on_shared_list(peer).await
+            }
             Request::Change(wire) => self.on_change(peer, wire),
             Request::ChangeResult { id, outcome, error } => {
                 self.on_change_result(peer, &id, outcome, error);
@@ -756,15 +803,24 @@ impl Node {
         if let Some(conn) = self.live_connection(peer) {
             return Ok(conn);
         }
-        let addr = self
+        let (addr, hint) = self
             .inner
             .peers
             .lock()
             .unwrap()
             .get(peer)
-            .and_then(|p| p.addr)
-            .ok_or_else(|| anyhow!("device address is unknown"))?;
-        Ok(self.dial(addr, Some(peer)).await?.1)
+            .map(|p| (p.addr, p.hint))
+            .unwrap_or_default();
+        let addr = addr.or(hint).ok_or_else(|| anyhow!("device address is unknown"))?;
+        // Both are dialed with the device's fingerprint pinned, so a wrong
+        // address can only fail, never reach someone else.
+        match self.dial(addr, Some(peer)).await {
+            Ok((_, conn)) => Ok(conn),
+            Err(e) => match hint.filter(|h| *h != addr) {
+                Some(h) => Ok(self.dial(h, Some(peer)).await?.1),
+                None => Err(e),
+            },
+        }
     }
 
     pub(crate) async fn request(&self, peer: &str, request: &Request) -> Result<Response> {
@@ -801,18 +857,63 @@ impl Node {
         true
     }
 
+    /// Counts a download for an untrusted device, or `None` when it already
+    /// runs as many as it may. Trusted devices are not limited.
+    fn fetch_slot(&self, peer: &str) -> Option<FetchSlot> {
+        if self.is_trusted(peer) {
+            return Some(FetchSlot { node: None, peer: String::new() });
+        }
+        let mut fetching = self.inner.fetching.lock().unwrap();
+        let n = fetching.entry(peer.to_owned()).or_insert(0);
+        if *n >= MAX_FETCHES_UNTRUSTED {
+            return None;
+        }
+        *n += 1;
+        Some(FetchSlot { node: Some(self.clone()), peer: peer.to_owned() })
+    }
+
+    /// Room for one more device in the peer list. Devices that are trusted
+    /// or connected stay; of the others the one seen longest ago goes. With
+    /// `only_stale`, a device seen recently is never pushed out and `false`
+    /// means there is no room.
+    fn make_room(&self, peers: &mut HashMap<String, Peer>, only_stale: bool) -> bool {
+        if peers.len() < MAX_PEERS {
+            return true;
+        }
+        let trusted: HashSet<String> = self.settings().trusted.into_iter().map(|t| t.id).collect();
+        let live: HashSet<String> = {
+            let conns = self.inner.conns.lock().unwrap();
+            conns.iter().filter(|(_, c)| c.close_reason().is_none()).map(|(id, _)| id.clone()).collect()
+        };
+        let oldest = peers
+            .iter()
+            .filter(|(id, _)| !trusted.contains(*id) && !live.contains(*id))
+            .filter(|(_, p)| !only_stale || !p.last_seen.is_some_and(|t| t.elapsed() < PRESENCE_TIMEOUT))
+            .min_by_key(|(_, p)| p.last_seen)
+            .map(|(id, _)| id.clone());
+        match oldest {
+            Some(id) => {
+                peers.remove(&id);
+                true
+            }
+            None => false,
+        }
+    }
+
     fn on_hello(&self, id: &str, ip: IpAddr, hello: Hello) {
         {
             let mut peers = self.inner.peers.lock().unwrap();
-            let p = peers.entry(id.to_owned()).or_insert_with(|| Peer {
-                name: String::new(),
-                os: String::new(),
-                addr: None,
-                last_seen: None,
-            });
+            if !peers.contains_key(id) {
+                // The device is connected, so it gets a place.
+                self.make_room(&mut peers, false);
+            }
+            let p = peers.entry(id.to_owned()).or_insert_with(Peer::new);
             p.name = clean_name(&hello.name);
             p.os = clean_name(&hello.os);
+            // The connection proved this address belongs to the device.
             p.addr = Some(SocketAddr::new(ip, hello.port));
+            p.verified = true;
+            p.hint = None;
             p.last_seen = Some(Instant::now());
         }
         self.refresh_presence();
@@ -873,19 +974,22 @@ impl Node {
             }
             let appeared = {
                 let mut peers = self.inner.peers.lock().unwrap();
-                if !peers.contains_key(&announce.id) && peers.len() >= MAX_PEERS {
+                // Fake announcements cannot push out devices seen recently.
+                if !peers.contains_key(&announce.id) && !self.make_room(&mut peers, true) {
                     continue;
                 }
-                let p = peers.entry(announce.id.clone()).or_insert_with(|| Peer {
-                    name: String::new(),
-                    os: String::new(),
-                    addr: None,
-                    last_seen: None,
-                });
+                let p = peers.entry(announce.id.clone()).or_insert_with(Peer::new);
+                let addr = SocketAddr::new(src.ip(), announce.port);
+                if p.verified && p.addr.is_some_and(|a| a.ip() != addr.ip()) {
+                    // Possibly a fake: keep the proven address, remember
+                    // this one for when that stops answering.
+                    p.hint = Some(addr);
+                    continue;
+                }
                 let was_recent = p.last_seen.is_some_and(|t| t.elapsed() < PRESENCE_TIMEOUT);
                 p.name = clean_name(&announce.name);
                 p.os = clean_name(&announce.os);
-                p.addr = Some(SocketAddr::new(src.ip(), announce.port));
+                p.addr = Some(addr);
                 p.last_seen = Some(Instant::now());
                 !was_recent
             };
@@ -1040,12 +1144,43 @@ async fn resolve(input: &str) -> Result<SocketAddr> {
         .ok_or_else(|| anyhow!("could not resolve {input}"))
 }
 
+/// A name from the network, as shown in the UI: no control characters and
+/// none of the invisible ones that reorder or hide text.
 fn clean_name(name: &str) -> String {
-    name.trim()
+    name.chars()
+        .filter(|&c| !c.is_control() && !crate::fs_util::is_deceptive_char(c))
+        .collect::<String>()
+        .trim()
         .chars()
-        .filter(|c| !c.is_control())
         .take(MAX_NAME)
         .collect()
+}
+
+/// Message text from the network: line breaks and tabs stay, other control
+/// characters and text-reordering ones go.
+fn clean_text(text: &str) -> String {
+    text.chars()
+        .filter(|&c| (!c.is_control() || c == '\n' || c == '\t') && !crate::fs_util::is_deceptive_char(c))
+        .collect()
+}
+
+/// One running download of an untrusted device; frees its place when dropped.
+struct FetchSlot {
+    node: Option<Node>,
+    peer: String,
+}
+
+impl Drop for FetchSlot {
+    fn drop(&mut self) {
+        let Some(node) = &self.node else { return };
+        let mut fetching = node.inner.fetching.lock().unwrap();
+        if let Some(n) = fetching.get_mut(&self.peer) {
+            *n -= 1;
+            if *n == 0 {
+                fetching.remove(&self.peer);
+            }
+        }
+    }
 }
 
 pub(crate) fn now_ms() -> i64 {
@@ -1053,4 +1188,23 @@ pub(crate) fn now_ms() -> i64 {
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_millis() as i64)
         .unwrap_or(0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{clean_name, clean_text};
+
+    #[test]
+    fn names_lose_invisible_and_reordering_characters() {
+        assert_eq!(clean_name("  Ноутбук\u{202E}gpj.exe "), "Ноутбукgpj.exe");
+        assert_eq!(clean_name("A\u{200B}B\u{2066}C\nD"), "ABCD");
+        assert_eq!(clean_name("👨\u{200D}💻 Work"), "👨\u{200D}💻 Work");
+        assert_eq!(clean_name(&"x".repeat(100)).chars().count(), 64);
+    }
+
+    #[test]
+    fn messages_keep_line_breaks_only() {
+        assert_eq!(clean_text("line 1\nline 2\tend"), "line 1\nline 2\tend");
+        assert_eq!(clean_text("bad\u{202E}txt\u{0007}"), "badtxt");
+    }
 }

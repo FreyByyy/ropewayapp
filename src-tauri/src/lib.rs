@@ -13,6 +13,7 @@ mod ipc;
 mod notify;
 mod files;
 mod screen;
+mod update;
 
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -148,6 +149,7 @@ pub fn run() {
             builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| show_main(app)));
         }
         builder = builder.plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![MINIMIZED_ARG])));
+        builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
     }
 
     builder
@@ -186,7 +188,9 @@ pub fn run() {
             #[cfg(desktop)]
             if !cfg!(debug_assertions) {
                 let enabled = app.autolaunch().is_enabled().unwrap_or(false);
-                if enabled != settings.autostart {
+                // Enabled again every start: after an update or a move the
+                // program may live at another path.
+                if enabled || settings.autostart {
                     let _ = apply_autostart(app.handle(), settings.autostart);
                 }
             }
@@ -270,6 +274,7 @@ pub fn run() {
             screen::start_screen_share,
             screen::stop_screen_share,
             screen::set_screen_video,
+            screen::set_trusted_view_without_asking,
             screen::ask_screen,
             screen::answer_screen_ask,
             screen::open_viewer,
@@ -291,6 +296,9 @@ pub fn run() {
             appearance::windows_accent,
             appearance::set_backdrop,
             appearance::set_system_bars,
+            update::check_update,
+            update::open_releases_page,
+            update::install_update,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Ropeway");

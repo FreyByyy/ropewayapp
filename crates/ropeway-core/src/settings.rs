@@ -23,11 +23,14 @@ pub struct Settings {
     pub manual_peers: Vec<String>,
     /// Where received files go. `None`: Downloads\Ropeway.
     pub download_dir: Option<PathBuf>,
-    /// Folder shown to everyone on the network. `None`: Documents\Ropeway Shared.
+    /// Folder shown to other devices. `None`: Documents\Ropeway Shared.
     pub shared_dir: Option<PathBuf>,
     pub sharing_enabled: bool,
     /// Only trusted devices may see the shared folder and ask for changes.
     pub shared_trusted_only: bool,
+    /// Trusted devices may watch this screen without being asked each time.
+    /// Control always asks.
+    pub trusted_view_without_asking: bool,
     /// Video settings last used for screen sharing; also used when someone
     /// asks to see or control this screen.
     pub screen_video: crate::screen::VideoSettings,
@@ -46,7 +49,9 @@ impl Default for Settings {
             download_dir: None,
             shared_dir: None,
             sharing_enabled: true,
-            shared_trusted_only: false,
+            // Safe by default; the user can open the folder to everyone.
+            shared_trusted_only: true,
+            trusted_view_without_asking: false,
             screen_video: Default::default(),
             appearance: serde_json::Value::Null,
         }

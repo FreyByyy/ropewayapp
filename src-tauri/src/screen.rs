@@ -82,6 +82,11 @@ pub fn set_screen_video(node: State<Node>, video: VideoSettings) -> CmdResult<()
 }
 
 #[tauri::command]
+pub fn set_trusted_view_without_asking(node: State<Node>, enabled: bool) -> CmdResult<()> {
+    node.set_trusted_view_without_asking(enabled).map_err(err)
+}
+
+#[tauri::command]
 pub fn stop_screen_share(node: State<Node>, id: String) {
     node.stop_screen_share(&id)
 }

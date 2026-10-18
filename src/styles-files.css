@@ -587,3 +587,57 @@ table.files {
   white-space: nowrap;
   user-select: text;
 }
+
+/* ---- updates ---- */
+
+.update-notes {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 46vh;
+  overflow-y: auto;
+  line-height: 1.45;
+}
+
+.update-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.update-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.update-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0 4px;
+}
+
+.progress-bar.indeterminate {
+  animation: update-pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes update-pulse {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-bar.indeterminate {
+    animation: none;
+  }
+}

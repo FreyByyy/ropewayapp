@@ -314,6 +314,16 @@ impl<'a> Client<'a> {
                 println!("{}", t("Готово.", "Done."));
             }
             "trusted" => {
+                if let Some(v) = option(rest, "--view-screen") {
+                    self.call("set_trusted_view", json!({ "enabled": on(&v) }))?;
+                }
+                let status = self.call("status", Value::Null)?;
+                let view = status["trusted_view_without_asking"].as_bool() == Some(true);
+                println!(
+                    "{}: {}",
+                    t("Смотрят экран без вопроса", "Watch the screen without asking"),
+                    if view { t("да", "yes") } else { t("нет", "no") }
+                );
                 let peers = self.call("peers", Value::Null)?;
                 for p in peers.as_array().cloned().unwrap_or_default().into_iter().filter(|p| p["trusted"].as_bool() == Some(true)) {
                     println!("{:<24} {}", p["name"].as_str().unwrap_or(""), p["code"].as_str().unwrap_or(""));
@@ -450,7 +460,6 @@ impl<'a> Client<'a> {
 
     /// `folders` shows them; options change them.
     fn folders(&self, rest: &[String]) -> Res<()> {
-        let on = |v: &str| matches!(v, "on" | "yes" | "1" | "true" | "вкл" | "да");
         let mut changed = false;
         if let Some(dir) = option(rest, "--downloads") {
             self.call("set_download_dir", json!({ "path": absolute(&dir) }))?;
@@ -616,6 +625,11 @@ fn print_transfer(ui: &Ui, tr: &Value) {
     );
 }
 
+/// "on"/"off" style answers on the command line.
+fn on(v: &str) -> bool {
+    matches!(v, "on" | "yes" | "1" | "true" | "вкл" | "да")
+}
+
 fn print_help(ui: &Ui) {
     let help_ru = "\
 Ropeway — команды в терминале. Если приложение не запущено, оно запустится в фоне.
@@ -634,7 +648,7 @@ Ropeway — команды в терминале. Если приложение 
   ropeway approve|deny <id>              одобрить или отклонить изменение
   ropeway name [<новое имя>]             имя этого устройства
   ropeway trust|untrust <устройство>     отметить устройство доверенным или снять отметку
-  ropeway trusted                        доверенные устройства
+  ropeway trusted [--view-screen on|off] доверенные устройства; смотрят ли они экран без вопроса
   ropeway folders [--downloads ПАПКА] [--shared ПАПКА] [--sharing on|off] [--trusted-only on|off]
   ropeway connect <ip[:порт]>            добавить компьютер по IP
   ropeway daemon                         работать без окна (для серверов)
@@ -658,7 +672,7 @@ Ropeway terminal commands. If the app is not running, it starts in the backgroun
   ropeway approve|deny <id>              approve or reject a change
   ropeway name [<new name>]              this device's name
   ropeway trust|untrust <device>         mark a device trusted, or not
-  ropeway trusted                        trusted devices
+  ropeway trusted [--view-screen on|off] trusted devices; whether they watch the screen without asking
   ropeway folders [--downloads DIR] [--shared DIR] [--sharing on|off] [--trusted-only on|off]
   ropeway connect <ip[:port]>            add a computer by IP
   ropeway daemon                         run without a window (servers)

@@ -80,9 +80,19 @@ pub async fn pick_files() -> Result<Vec<String>> {
 
 /// Opens a file in the app the user chooses for it.
 pub fn open_file(path: &str) -> Result<()> {
+    call_with_path("openFile", path)
+}
+
+/// Hands a downloaded update to the system installer.
+pub fn install_apk(path: &str) -> Result<()> {
+    call_with_path("installApk", path)
+}
+
+/// Calls `method(path)`, which returns an error message or null.
+fn call_with_path(method: &str, path: &str) -> Result<()> {
     let error = with_bridge(|env, b| {
         let p = env.new_string(path)?;
-        let out = env.call_method(b, "openFile", "(Ljava/lang/String;)Ljava/lang/String;", &[JValue::Object(&p)])?.l()?;
+        let out = env.call_method(b, method, "(Ljava/lang/String;)Ljava/lang/String;", &[JValue::Object(&p)])?.l()?;
         if out.is_null() {
             return Ok(None);
         }

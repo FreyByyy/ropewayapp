@@ -3,7 +3,7 @@
 #
 # `tauri android build` links the Rust library into jniLibs with a symbolic
 # link, which Windows allows only in Developer Mode; this copies it instead
-# and runs Gradle itself. Output: releases/Ropeway-<version>-android-<arch>.apk
+# and runs Gradle itself. Output: releases/<version>/Ropeway-<version>-android-<arch>.apk
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -13,7 +13,8 @@ export NDK_HOME="${NDK_HOME:-$ANDROID_HOME\\ndk\\27.2.12479018}"
 export PATH="$HOME/.cargo/bin:$PATH"
 
 version=$(python -c "import json;print(json.load(open('src-tauri/tauri.conf.json'))['version'])")
-mkdir -p releases
+out="releases/$version"
+mkdir -p "$out"
 
 for arch in "${@:-arm64}"; do
   case "$arch" in
@@ -35,6 +36,6 @@ for arch in "${@:-arm64}"; do
   (cd src-tauri/gen/android && ./gradlew.bat "assemble${flavor}Release" -x "rustBuild${flavor}Release")
   lower=$(echo "$flavor" | tr 'A-Z' 'a-z')
   cp "src-tauri/gen/android/app/build/outputs/apk/$lower/release/app-$lower-release.apk" \
-    "releases/Ropeway-$version-android-$arch.apk"
-  echo "releases/Ropeway-$version-android-$arch.apk"
+    "$out/Ropeway-$version-android-$arch.apk"
+  echo "$out/Ropeway-$version-android-$arch.apk"
 done

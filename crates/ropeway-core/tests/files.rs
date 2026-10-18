@@ -22,6 +22,8 @@ async fn start_in(dir: &Path) -> Node {
     .unwrap();
     node.set_download_dir(Some(dir.join("downloads"))).unwrap();
     node.set_shared_dir(Some(dir.join("shared"))).unwrap();
+    // Most tests share with an untrusted device; the default is checked below.
+    node.set_shared_trusted_only(false).unwrap();
     node
 }
 
@@ -279,6 +281,35 @@ async fn shared_folder_cannot_be_escaped() {
     assert!(err.to_string().contains("invalid path"), "{err}");
     b.propose_delete(a.id(), "../secret.txt").unwrap_err();
     assert!(a_dir.join("secret.txt").exists());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn shared_folder_is_for_trusted_devices_by_default() {
+    let dir = temp_dir("default");
+    let node = Node::start(NodeOptions { data_dir: dir.join("data"), port: Some(0), discovery: false, use_recycle_bin: false })
+        .await
+        .unwrap();
+    assert!(node.folders().shared_trusted_only);
+    assert!(!node.settings().trusted_view_without_asking);
+    node.shutdown().await;
+}
+
+#[cfg(unix)]
+#[tokio::test(flavor = "multi_thread")]
+async fn device_key_is_private() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = temp_dir("key");
+    let data = dir.join("data");
+    std::fs::create_dir_all(&data).unwrap();
+    // A data folder from an older version, readable by everyone.
+    std::fs::set_permissions(&data, std::fs::Permissions::from_mode(0o755)).unwrap();
+    let node = Node::start(NodeOptions { data_dir: data.clone(), port: Some(0), discovery: false, use_recycle_bin: false })
+        .await
+        .unwrap();
+    let mode = |p: &Path| std::fs::metadata(p).unwrap().permissions().mode() & 0o777;
+    assert_eq!(mode(&data), 0o700);
+    assert_eq!(mode(&data.join("identity.key.der")), 0o600);
+    node.shutdown().await;
 }
 
 #[tokio::test(flavor = "multi_thread")]

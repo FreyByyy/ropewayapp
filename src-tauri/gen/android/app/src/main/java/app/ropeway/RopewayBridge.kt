@@ -187,6 +187,25 @@ class RopewayBridge(private val activity: MainActivity) {
     }
   }
 
+  /**
+   * Hands a downloaded update to the system installer. Android asks once to
+   * allow installing from Ropeway and refuses an APK signed with another key.
+   */
+  fun installApk(path: String): String? {
+    val file = File(path)
+    if (!file.exists()) return "file not found"
+    val uri = FileProvider.getUriForFile(app, "${app.packageName}.fileprovider", file)
+    val intent = Intent(Intent.ACTION_VIEW)
+      .setDataAndType(uri, "application/vnd.android.package-archive")
+      .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+    return try {
+      activity.startActivity(intent)
+      null
+    } catch (e: ActivityNotFoundException) {
+      "no installer"
+    }
+  }
+
   // ---- system bars ----
 
   /** Colors the status and navigation bar areas like the app's background. */
