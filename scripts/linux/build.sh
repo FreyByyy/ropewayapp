@@ -22,7 +22,8 @@ version=$(node -p "require('./src-tauri/tauri.conf.json').version")
 out="$src/releases/$version"
 mkdir -p "$out"
 b="target/release/bundle"
-cp "$b"/appimage/*.AppImage "$out/Ropeway-$version-linux-x86_64.AppImage"
-cp "$b"/deb/*.deb "$out/Ropeway-$version-linux-amd64.deb"
-cp "$b"/rpm/*.rpm "$out/Ropeway-$version-linux-x86_64.rpm"
+# Older versions' packages may still be in the bundle folders.
+cp "$b/appimage/Ropeway_${version}_amd64.AppImage" "$out/Ropeway-$version-linux-x86_64.AppImage"
+cp "$b/deb/Ropeway_${version}_amd64.deb" "$out/Ropeway-$version-linux-amd64.deb"
+cp "$b/rpm/Ropeway-${version}-1.x86_64.rpm" "$out/Ropeway-$version-linux-x86_64.rpm"
 ls -la "$out" | grep linux
