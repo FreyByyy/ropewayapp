@@ -181,7 +181,21 @@ async fn run(node: &Node, cmd: &str, a: &Value) -> anyhow::Result<Value> {
         "set_sharing" => json!(node.set_sharing(flag(a, "enabled")?)?),
         "set_trusted_only" => json!(node.set_shared_trusted_only(flag(a, "enabled")?)?),
         "set_trusted_view" => json!(node.set_trusted_view_without_asking(flag(a, "enabled")?)?),
-        "connect" => json!(node.connect_address(arg(a, "address")?).await?),
+        "connect" => {
+            let target = arg(a, "address")?;
+            if target.starts_with("ropeway://") || target.starts_with("RW:") {
+                json!(node.connect_invite(target).await?)
+            } else if ropeway_core::pairing::normalize_code(target).is_some() {
+                json!(node.connect_code(target).await?)
+            } else {
+                json!(node.connect_address(target).await?)
+            }
+        }
+        "pairing_code" => {
+            let (code, expires) = node.start_pairing_code();
+            json!({ "code": code, "expires": expires })
+        }
+        "set_discoverable" => json!(node.set_discoverable(flag(a, "enabled")?)?),
         "quit" => Value::Null,
         other => anyhow::bail!("unknown command: {other}"),
     })

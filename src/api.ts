@@ -22,6 +22,8 @@ export interface PeerView {
   address: string | null;
   online: boolean;
   trusted: boolean;
+  /** Pinned to the top of the device page; grants nothing. */
+  favorite: boolean;
   code: string;
 }
 
@@ -31,6 +33,21 @@ export interface MeView {
   code: string;
   port: number;
   addresses: string[];
+  /** Link with this device's addresses and key, for a QR code. */
+  invite: string;
+}
+
+export interface QrMatrix {
+  text: string;
+  width: number;
+  /** "1" dark, "0" light, row by row. */
+  cells: string;
+}
+
+export interface PairingCode {
+  code: string;
+  /** Unix time, ms. */
+  expires: number;
 }
 
 export type Language = "ru" | "en";
@@ -55,6 +72,9 @@ export interface Settings {
   screen_video: VideoSettings;
   /** Trusted devices may watch the screen without being asked. */
   trusted_view_without_asking: boolean;
+  /** Announce this device and find others on its own. */
+  discoverable: boolean;
+  favorites: { id: string; name: string }[];
   appearance: unknown;
 }
 
@@ -237,6 +257,7 @@ export interface ScreenView {
 export type CoreEvent =
   | { kind: "peers"; data: PeerView[] }
   | { kind: "chat"; data: ChatMessage }
+  | { kind: "chat_deleted"; data: { conversation: string; ids: string[] } }
   | { kind: "me"; data: MeView }
   | { kind: "transfer"; data: TransferView }
   | { kind: "changes"; data: ChangeRequest[] }
@@ -255,6 +276,17 @@ export const api = {
   setAutostart: (enabled: boolean) => invoke<void>("set_autostart", { enabled }),
   setTrusted: (id: string, trusted: boolean) => invoke<void>("set_trusted", { id, trusted }),
   connectAddress: (address: string) => invoke<PeerView>("connect_address", { address }),
+  inviteQr: () => invoke<QrMatrix>("invite_qr"),
+  startPairingCode: () => invoke<PairingCode>("start_pairing_code"),
+  stopPairingCode: () => invoke<void>("stop_pairing_code"),
+  connectInvite: (link: string) => invoke<PeerView>("connect_invite", { link }),
+  connectCode: (code: string) => invoke<PeerView>("connect_code", { code }),
+  setFavorite: (id: string, favorite: boolean) => invoke<void>("set_favorite", { id, favorite }),
+  setDiscoverable: (enabled: boolean) => invoke<void>("set_discoverable", { enabled }),
+  deleteMessages: (conversation: string, ids: string[], forEveryone: boolean) =>
+    invoke<void>("delete_messages", { conversation, ids, forEveryone }),
+  clearChat: (conversation: string) => invoke<void>("clear_chat", { conversation }),
+  openProjectPage: () => invoke<void>("open_project_page"),
   sendChat: (conversation: string, text: string) => invoke<ChatMessage>("send_chat", { conversation, text }),
   retryChat: (conversation: string, id: string) => invoke<void>("retry_chat", { conversation, id }),
   setActiveConversation: (conversation: string | null) =>
@@ -320,6 +352,7 @@ export const api = {
   setAppearance: (appearance: unknown) => invoke<void>("set_appearance", { appearance }),
   windowsAccent: () => invoke<string | null>("windows_accent"),
   setBackdrop: (mica: boolean, dark: boolean) => invoke<void>("set_backdrop", { mica, dark }),
+  micaSupported: () => invoke<boolean>("mica_supported"),
 
   openPath: (path: string) => invoke<void>("open_path", { path }),
   revealPath: (path: string) => invoke<void>("reveal_path", { path }),

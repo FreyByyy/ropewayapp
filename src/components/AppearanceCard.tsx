@@ -79,7 +79,7 @@ export function AppearanceCard({ appearance, peers }: { appearance: AppearanceAp
       <div className="theme-grid">
         {themes.map((th) => (
           <div key={th.id} className={`theme-card ${th.id === a.theme ? "on" : ""}`}>
-            <button className="theme-pick" onClick={(e) => revealChange(e, () => appearance.update({ theme: th.id }))} aria-pressed={th.id === a.theme}>
+            <button className="theme-pick" onClick={(e) => th.id !== a.theme && revealChange(e, () => appearance.update({ theme: th.id }))} aria-pressed={th.id === a.theme}>
               <ThemePreview theme={th} mode={th.modes.includes(mode) ? mode : th.modes[0]} accent={accentFor(th)} />
               <span className="theme-name">{th.name}</span>
               <span className="theme-meta">{customIds.has(th.id) ? (th.author ?? "") : t("builtIn")}</span>
@@ -99,7 +99,7 @@ export function AppearanceCard({ appearance, peers }: { appearance: AppearanceAp
                 className={a.mode === m ? "on" : ""}
                 disabled={!supported}
                 title={supported ? undefined : t("modeUnsupported")}
-                onClick={(e) => revealChange(e, () => appearance.update({ mode: m }))}
+                onClick={(e) => a.mode !== m && revealChange(e, () => appearance.update({ mode: m }))}
               >
                 {label}
               </button>

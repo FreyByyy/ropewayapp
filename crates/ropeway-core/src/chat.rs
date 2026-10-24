@@ -2,7 +2,7 @@
 //! conversation. A conversation is either a peer id (direct messages) or
 //! [`GENERAL`] (the network-wide chat).
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
@@ -18,6 +18,9 @@ pub const MAX_TEXT: usize = 32 * 1024;
 const MAX_HISTORY: usize = 5000;
 /// Messages kept beyond [`MAX_HISTORY`] before old ones are dropped.
 const TRIM_SLACK: usize = 250;
+/// Messages one deletion may name.
+pub const MAX_DELETE: usize = 1000;
+const DELETES_FILE: &str = "deletes.json";
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -54,6 +57,8 @@ pub fn is_valid_conversation(conv: &str) -> bool {
 pub struct ChatStore {
     dir: PathBuf,
     conversations: HashMap<String, Vec<ChatMessage>>,
+    /// "Delete for everyone" for devices that were offline: peer → ids.
+    deletes: HashMap<String, Vec<String>>,
 }
 
 impl ChatStore {
@@ -94,7 +99,69 @@ impl ChatStore {
             }
             conversations.insert(conv, messages);
         }
-        Ok(Self { dir, conversations })
+        let deletes = fs::read(dir.join(DELETES_FILE))
+            .ok()
+            .and_then(|b| serde_json::from_slice::<HashMap<String, Vec<String>>>(&b).ok())
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|(peer, _)| is_valid_id(peer))
+            .collect();
+        Ok(Self { dir, conversations, deletes })
+    }
+
+    /// Removes the messages with these ids; with `from`, only ones that
+    /// device sent. Returns the ids removed.
+    pub fn remove(&mut self, conv: &str, ids: &HashSet<String>, from: Option<&str>) -> Vec<String> {
+        let Some(list) = self.conversations.get_mut(conv) else { return Vec::new() };
+        let mut removed = Vec::new();
+        list.retain(|m| {
+            let gone = ids.contains(&m.id) && from.is_none_or(|f| !m.outgoing && m.from_id == f);
+            if gone {
+                removed.push(m.id.clone());
+            }
+            !gone
+        });
+        if !removed.is_empty() {
+            self.persist(conv);
+        }
+        removed
+    }
+
+    /// Removes the whole conversation. Returns the ids removed.
+    pub fn clear(&mut self, conv: &str) -> Vec<String> {
+        let removed: Vec<String> = self.conversations.remove(conv).unwrap_or_default().into_iter().map(|m| m.id).collect();
+        let _ = fs::remove_file(self.dir.join(format!("{conv}.jsonl")));
+        removed
+    }
+
+    /// Remembers a deletion to send when `peer` is back.
+    pub fn queue_delete(&mut self, peer: &str, ids: &[String]) {
+        let list = self.deletes.entry(peer.to_owned()).or_default();
+        for id in ids {
+            if !list.contains(id) {
+                list.push(id.clone());
+            }
+        }
+        let excess = list.len().saturating_sub(MAX_DELETE);
+        list.drain(..excess);
+        self.save_deletes();
+    }
+
+    /// Deletions waiting for `peer`, removed from the queue.
+    pub fn take_deletes(&mut self, peer: &str) -> Vec<String> {
+        let ids = self.deletes.remove(peer).unwrap_or_default();
+        if !ids.is_empty() {
+            self.save_deletes();
+        }
+        ids
+    }
+
+    fn save_deletes(&self) {
+        if let Ok(bytes) = serde_json::to_vec(&self.deletes) {
+            if let Err(e) = write_atomic(&self.dir.join(DELETES_FILE), &bytes) {
+                tracing::warn!("saving chat deletions: {e}");
+            }
+        }
     }
 
     /// Adds a message; returns `false` if a message with this id is already
@@ -187,6 +254,10 @@ impl ChatStore {
 
     fn persist(&self, conv: &str) {
         let Some(list) = self.conversations.get(conv) else { return };
+        if list.is_empty() {
+            let _ = fs::remove_file(self.dir.join(format!("{conv}.jsonl")));
+            return;
+        }
         let mut out = Vec::new();
         for m in list {
             if let Ok(line) = serde_json::to_vec(m) {
@@ -215,6 +286,35 @@ mod tests {
             outgoing: true,
             status,
         }
+    }
+
+    #[test]
+    fn removed_messages_stay_removed() {
+        let dir = std::env::temp_dir().join(format!("ropeway-chat-{}", uuid::Uuid::new_v4()));
+        let mut store = ChatStore::load(dir.clone()).unwrap();
+        for i in 0..5 {
+            store.add(msg(&i.to_string(), MessageStatus::Sent));
+        }
+        let ids: HashSet<String> = ["1", "3", "nope"].iter().map(|s| s.to_string()).collect();
+        assert_eq!(store.remove(GENERAL, &ids, None), vec!["1", "3"]);
+        // A device can only remove what it sent itself.
+        let mut incoming = msg("x", MessageStatus::Received);
+        incoming.outgoing = false;
+        incoming.from_id = "ffffffffffffffffffffffffffffffff".into();
+        store.add(incoming);
+        let x: HashSet<String> = ["x".to_string(), "0".to_string()].into();
+        assert_eq!(store.remove(GENERAL, &x, Some("0123456789abcdef0123456789abcdef")), Vec::<String>::new());
+        assert_eq!(store.remove(GENERAL, &x, Some("ffffffffffffffffffffffffffffffff")), vec!["x"]);
+        let left: Vec<String> = ChatStore::load(dir.clone()).unwrap().history(GENERAL).into_iter().map(|m| m.id).collect();
+        assert_eq!(left, vec!["0", "2", "4"]);
+
+        store.queue_delete("ffffffffffffffffffffffffffffffff", &["a".into(), "b".into()]);
+        let mut reloaded = ChatStore::load(dir.clone()).unwrap();
+        assert_eq!(reloaded.take_deletes("ffffffffffffffffffffffffffffffff"), vec!["a", "b"]);
+        assert!(reloaded.take_deletes("ffffffffffffffffffffffffffffffff").is_empty());
+
+        assert_eq!(reloaded.clear(GENERAL).len(), 3);
+        assert!(ChatStore::load(dir).unwrap().history(GENERAL).is_empty());
     }
 
     #[test]

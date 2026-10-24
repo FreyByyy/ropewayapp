@@ -7,6 +7,8 @@ import { normalizeAppearance, normalizeTheme } from "./normalize";
 import { DEFAULT_APPEARANCE, type Appearance, type Mode, type MotionChoice, type ThemeDef } from "./types";
 import { IS_MOBILE, NOT_WINDOWS } from "../platform";
 
+const MICA_KEY = "ropeway.micaSupported";
+
 const media = (q: string) => window.matchMedia(q);
 
 /** `rgb(…)` / `#rrggbb` to `#rrggbb`; transparent and unknown give null. */
@@ -116,8 +118,30 @@ export function useAppearance() {
   // Windows' "show animations" off counts as "reduced" unless the user chose off.
   const motion: MotionChoice = appearance.motion === "full" && systemReduced ? "reduced" : appearance.motion;
 
-  // Mica is a Windows window material; phones draw the theme's background.
-  const mica = theme.mica && !NOT_WINDOWS;
+  // Mica is a Windows 11 window material; Windows 10 and other systems draw
+  // the theme's background. Remembered so the next start does not flash.
+  const [micaOk, setMicaOk] = useState(() => {
+    try {
+      return localStorage.getItem(MICA_KEY) !== "0";
+    } catch {
+      return true;
+    }
+  });
+  useEffect(() => {
+    if (NOT_WINDOWS) return;
+    api
+      .micaSupported()
+      .then((ok) => {
+        setMicaOk(ok);
+        try {
+          localStorage.setItem(MICA_KEY, ok ? "1" : "0");
+        } catch {
+          /* not remembered */
+        }
+      })
+      .catch(() => {});
+  }, []);
+  const mica = theme.mica && !NOT_WINDOWS && micaOk;
   useLayoutEffect(() => {
     applyTheme(theme, mode, accent, motion, mica);
   }, [theme, mode, accent, motion, mica]);

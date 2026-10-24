@@ -18,3 +18,5 @@ src-tauri/gen/android/.gradle/
 src-tauri/gen/android/*.jks
 src-tauri/gen/android/keystore.properties
 src-tauri/gen/android/.kotlin/
+# Written by every Android build, with paths of this computer.
+src-tauri/gen/android/tauri.settings.gradle

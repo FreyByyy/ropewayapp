@@ -3627,6 +3627,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d55d956fa96f5ec02be2e13af0e20391a5aa83d6a074e3ad368959d0fab299ea"
 
 [[package]]
+name = "qrcode"
+version = "0.14.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d68782463e408eb1e668cf6152704bd856c78c5b6417adaee3203d8f4c1fc9ec"
+
+[[package]]
 name = "quick-error"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3998,7 +4004,7 @@ dependencies = [
 
 [[package]]
 name = "ropeway"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -4006,6 +4012,7 @@ dependencies = [
  "dirs 7.0.0",
  "jni 0.21.1",
  "minisign-verify 0.2.5",
+ "qrcode",
  "reqwest 0.12.28",
  "ring",
  "ropeway-core",
@@ -4015,6 +4022,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-autostart",
+ "tauri-plugin-barcode-scanner",
  "tauri-plugin-dialog",
  "tauri-plugin-notification",
  "tauri-plugin-opener",
@@ -4029,7 +4037,7 @@ dependencies = [
 
 [[package]]
 name = "ropeway-core"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "dirs 7.0.0",
@@ -4052,7 +4060,7 @@ dependencies = [
 
 [[package]]
 name = "ropeway-media"
-version = "0.6.1"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "arboard",
@@ -5050,6 +5058,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bce56ceb0a99b8ab5eebc977ba9ffc62391b862648cb9ab76fc8bc7231b8f7e2"
 dependencies = [
  "auto-launch",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "tauri-plugin-barcode-scanner"
+version = "2.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b57ad7e6ed3e8927205dade785400d9829b8208f59cfe24324fcb324f61482b2"
+dependencies = [
+ "log",
  "serde",
  "serde_json",
  "tauri",

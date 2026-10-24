@@ -7,6 +7,7 @@ pub mod discovery;
 pub mod fs_util;
 pub mod identity;
 pub mod node;
+pub mod pairing;
 pub mod protocol;
 pub mod screen;
 pub mod settings;

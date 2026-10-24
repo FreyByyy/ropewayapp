@@ -15,6 +15,8 @@ type CmdResult<T> = Result<T, String>;
 
 /// Where people download Ropeway by hand (`.deb`/`.rpm` installs, iOS …).
 pub const RELEASES_PAGE: &str = "https://github.com/FreyByyy/ropewayapp/releases/latest";
+/// The project's source code.
+pub const PROJECT_PAGE: &str = "https://github.com/FreyByyy/ropewayapp";
 
 #[derive(Serialize, Clone, Debug)]
 pub struct UpdateInfo {
@@ -41,6 +43,13 @@ fn report(app: &AppHandle, done: u64, total: Option<u64>) {
 pub fn open_releases_page(app: AppHandle) -> CmdResult<()> {
     use tauri_plugin_opener::OpenerExt;
     app.opener().open_url(RELEASES_PAGE, None::<&str>).map_err(|e| e.to_string())
+}
+
+/// Opens the project's page on GitHub.
+#[tauri::command]
+pub fn open_project_page(app: AppHandle) -> CmdResult<()> {
+    use tauri_plugin_opener::OpenerExt;
+    app.opener().open_url(PROJECT_PAGE, None::<&str>).map_err(|e| e.to_string())
 }
 
 /// A newer version, if there is one.

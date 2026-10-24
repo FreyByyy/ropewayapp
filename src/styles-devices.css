@@ -1,0 +1,495 @@
+/* Devices first: the start page, a device's page, adding a device. */
+
+/* ---- pages ------------------------------------------------------------- */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.page-head {
+  gap: 12px;
+}
+
+.page-head h1 {
+  flex: 1;
+}
+
+.page-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.page-body > .settings-section {
+  margin-top: 8px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* ---- start page --------------------------------------------------------- */
+
+.devices-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  color: var(--muted);
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.devices-empty .btn {
+  margin-top: 10px;
+}
+
+.favorites-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.device-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+}
+
+.device-grid.big {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.device-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color var(--t-fast, 0.12s), box-shadow var(--t-fast, 0.12s);
+}
+
+.device-tile:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.device-tile.is-offline .device-tile-main {
+  opacity: 0.62;
+}
+
+.device-tile-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 44px 14px 14px;
+  text-align: left;
+  border-radius: 12px;
+  min-width: 0;
+}
+
+.device-tile-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.device-tile-name {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 650;
+  min-width: 0;
+}
+
+.device-tile.big .device-tile-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+}
+
+.device-tile-sub {
+  color: var(--muted);
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.device-tile .star {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.star {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: var(--faint);
+}
+
+.star:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.star.on,
+.favorite-mark {
+  color: #e8a317;
+}
+
+.tool.star {
+  display: flex;
+  width: auto;
+  height: 34px;
+}
+
+.tool.star.on {
+  background: color-mix(in srgb, #e8a317 14%, transparent);
+}
+
+.device-tile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 0 8px 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+}
+
+.device-tile-actions .tool {
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  height: auto;
+  padding: 7px 4px;
+  min-width: 0;
+  font-size: 11.5px;
+}
+
+/* Tile labels stay even when the window is narrow. */
+.device-tile-actions .tool span:not(.icon-png) {
+  display: inline;
+}
+
+.device-tile .badge {
+  margin-left: auto;
+}
+
+/* ---- a device's page ---------------------------------------------------- */
+
+.page-head .head-text h1 {
+  flex: none;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.action-anchor > .action-tile {
+  height: 100%;
+}
+
+.action-tile {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  transition: border-color var(--t-fast, 0.12s), transform var(--t-fast, 0.12s);
+}
+
+.action-tile:not(.disabled):hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+}
+
+.action-tile.disabled {
+  opacity: 0.5;
+}
+
+.action-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 16px;
+  text-align: left;
+  border-radius: 14px;
+}
+
+.action-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 8px;
+  border-radius: 13px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.action-icon .badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+}
+
+.action-title {
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 15px;
+}
+
+.action-hint {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.tile-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: -6px 10px 10px;
+  padding: 5px 6px;
+  border-radius: 7px;
+  color: var(--accent);
+  font-size: 12.5px;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.tile-link:hover {
+  background: var(--hover);
+}
+
+.device-transfers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 720px;
+}
+
+/* ---- adding a device ----------------------------------------------------- */
+
+.scan-btn {
+  width: 100%;
+  height: 44px;
+  margin-bottom: 4px;
+}
+
+.add-tabs {
+  display: flex;
+  width: 100%;
+  margin: 4px 0 14px;
+}
+
+.add-tabs button {
+  flex: 1;
+}
+
+.add-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qr-pane {
+  align-items: center;
+  text-align: center;
+}
+
+.brand-qr {
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 8px 24px rgb(0 0 0 / 0.12);
+}
+
+.qr-placeholder {
+  width: 232px;
+  height: 232px;
+  border-radius: 14px;
+  background: var(--hover);
+}
+
+.code-pane {
+  gap: 14px;
+}
+
+.code-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.code-block .big-code {
+  font-size: 30px;
+  letter-spacing: 0.08em;
+}
+
+.code-entry {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  align-items: center;
+}
+
+.code-entry .wide-input {
+  flex: 1;
+  margin-top: 0;
+}
+
+.code-input {
+  font-size: 18px;
+  letter-spacing: 0.12em;
+}
+
+.check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 12px 0 4px;
+  cursor: pointer;
+}
+
+.check-row input {
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+
+.check-row > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-weight: 550;
+}
+
+.check-row .field-hint {
+  font-weight: 400;
+}
+
+/* ---- chat: deleting messages ---------------------------------------------- */
+
+.head-link {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  max-width: 100%;
+}
+
+.head-text h1 .head-link {
+  border-radius: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.head-link:not(:disabled):hover {
+  text-decoration: underline;
+  text-decoration-color: var(--faint);
+}
+
+.msg-actions {
+  position: relative;
+  align-self: center;
+  opacity: 0;
+  transition: opacity var(--t-fast, 0.12s);
+}
+
+.row:hover .msg-actions,
+.row.picked .msg-actions,
+.msg-actions:focus-within {
+  opacity: 1;
+}
+
+.msg-delete {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: 0 4px;
+  border-radius: 8px;
+  color: var(--faint);
+}
+
+.msg-delete:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.msg-menu {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+
+.row.out .msg-menu {
+  left: auto;
+  right: 0;
+}
+
+.danger-text {
+  color: var(--danger);
+}
+
+/* ---- sidebar and settings ------------------------------------------------- */
+
+.side-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-list-hint {
+  margin: 10px 16px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.sidebar.compact .chat-list-hint {
+  display: none;
+}
+
+.about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+@media (max-width: 640px) {
+  .page-body {
+    padding: 14px 14px 24px;
+  }
+
+  .action-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .device-grid,
+  .device-grid.big {
+    grid-template-columns: 1fr;
+  }
+}

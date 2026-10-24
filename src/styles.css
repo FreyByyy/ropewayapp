@@ -1084,3 +1084,7 @@ textarea {
 ::-webkit-scrollbar-thumb:hover {
   background-color: var(--faint);
 }
+
+.pre-line {
+  white-space: pre-line;
+}

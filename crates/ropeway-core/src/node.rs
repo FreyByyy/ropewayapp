@@ -13,9 +13,10 @@ use tokio::net::UdpSocket;
 use tokio::runtime::Handle;
 use tokio::sync::{broadcast, watch, Notify};
 
-use crate::chat::{is_valid_conversation, ChatMessage, ChatStore, ConversationSummary, MessageStatus, GENERAL, MAX_TEXT};
+use crate::chat::{is_valid_conversation, ChatMessage, ChatStore, ConversationSummary, MessageStatus, GENERAL, MAX_DELETE, MAX_TEXT};
 use crate::discovery::{self, Announce, DISCOVERY_PORT};
-use crate::identity::{short_code, Identity};
+use crate::identity::{is_valid_id, short_code, Identity};
+use crate::pairing::{self, CodeQuery, CodeReply, Invite};
 use crate::protocol::{read_frame, write_frame, ChatWire, Hello, Request, Response, DEFAULT_PORT, PROTOCOL_VERSION};
 use crate::settings::{Settings, TrustedDevice};
 use crate::screen::{RemoteShare, ScreenAsk, ScreenState, ScreenView};
@@ -67,6 +68,7 @@ pub struct PeerView {
     pub address: Option<String>,
     pub online: bool,
     pub trusted: bool,
+    pub favorite: bool,
     pub code: String,
 }
 
@@ -77,6 +79,8 @@ pub struct MeView {
     pub code: String,
     pub port: u16,
     pub addresses: Vec<String>,
+    /// Link with this device's addresses and key, for a QR code.
+    pub invite: String,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -84,6 +88,8 @@ pub struct MeView {
 pub enum Event {
     Peers(Vec<PeerView>),
     Chat(ChatMessage),
+    /// Messages removed from a conversation (all of them when it was cleared).
+    ChatDeleted { conversation: String, ids: Vec<String> },
     Me(MeView),
     /// A transfer was created or changed (status or progress).
     Transfer(TransferView),
@@ -170,6 +176,10 @@ pub(crate) struct Inner {
     /// Downloads running for each untrusted device (see [`MAX_FETCHES_UNTRUSTED`]).
     fetching: Mutex<HashMap<String, usize>>,
     listings: tokio::sync::Semaphore,
+    /// UDP port of discovery and temporary codes (47800).
+    discovery_port: u16,
+    /// The temporary code this device shows, and when it stops working.
+    pairing: Mutex<Option<(String, Instant)>>,
     /// Set once by `shutdown`; every background task stops on it.
     pub(crate) stop: watch::Sender<bool>,
     // Lock order: transfers before progress.
@@ -203,8 +213,14 @@ impl Node {
         let provider = tls::provider();
         let endpoint = bind_endpoint(tls::server_config(&identity, provider.clone())?, opts.port)?;
         let port = endpoint.local_addr()?.port();
+        // ROPEWAY_DISCOVERY_PORT: another port, for tests that must not talk
+        // to the real network.
+        let discovery_port = std::env::var("ROPEWAY_DISCOVERY_PORT")
+            .ok()
+            .and_then(|p| p.parse().ok())
+            .unwrap_or(DISCOVERY_PORT);
         let discovery_socket = if opts.discovery {
-            match discovery::bind() {
+            match discovery::bind(discovery_port) {
                 Ok(s) => Some(Arc::new(s)),
                 Err(e) => {
                     tracing::warn!("discovery disabled: {e}");
@@ -237,6 +253,8 @@ impl Node {
                 rate: Mutex::new(HashMap::new()),
                 fetching: Mutex::new(HashMap::new()),
                 listings: tokio::sync::Semaphore::new(MAX_LISTINGS),
+                discovery_port,
+                pairing: Mutex::new(None),
                 stop: watch::channel(false).0,
                 transfers: Mutex::new(transfers),
                 progress: Mutex::new(HashMap::new()),
@@ -287,6 +305,12 @@ impl Node {
             code: short_code(&self.inner.identity.id),
             port: self.inner.port,
             addresses: discovery::local_addresses().iter().map(|a| a.to_string()).collect(),
+            invite: pairing::invite_link(&Invite {
+                id: self.inner.identity.id.clone(),
+                port: self.inner.port,
+                addrs: discovery::local_addresses(),
+                name: self.my_name(),
+            }),
         }
     }
 
@@ -339,6 +363,34 @@ impl Node {
             // Trust is checked on every request, but a screen being watched
             // is one long stream: end it now.
             self.revoke_screen_access(id);
+        }
+        self.refresh_presence();
+        Ok(())
+    }
+
+    /// Pins a device to the top of the device page, or unpins it.
+    pub fn set_favorite(&self, id: &str, favorite: bool) -> Result<()> {
+        let name = self.peers().into_iter().find(|p| p.id == id).map(|p| p.name).ok_or_else(|| anyhow!("unknown device"))?;
+        self.update_settings(|s| {
+            s.favorites.retain(|t| t.id != id);
+            if favorite {
+                s.favorites.push(TrustedDevice { id: id.to_owned(), name });
+            }
+        })?;
+        self.refresh_presence();
+        Ok(())
+    }
+
+    /// Whether this device announces itself and finds others on its own.
+    pub fn set_discoverable(&self, enabled: bool) -> Result<()> {
+        self.update_settings(|s| s.discoverable = enabled)?;
+        if enabled {
+            self.inner.announce_now.notify_one();
+        } else {
+            // Devices known only from announcements are no longer shown.
+            for p in self.inner.peers.lock().unwrap().values_mut() {
+                p.last_seen = None;
+            }
         }
         self.refresh_presence();
         Ok(())
@@ -440,14 +492,16 @@ impl Node {
                 address: p.addr.map(|a| a.ip().to_string()),
                 online: recent || live.contains(id),
                 trusted: settings.is_trusted(id),
+                favorite: settings.is_favorite(id),
                 code: short_code(id),
             });
         }
-        // Devices not seen this session: trusted ones and ones we chatted with.
+        // Devices not seen this session: trusted and favorite ones, and ones
+        // we chatted with.
         let mut seen: HashSet<String> = peers.keys().cloned().collect();
-        for t in &settings.trusted {
+        for t in settings.trusted.iter().chain(&settings.favorites) {
             if seen.insert(t.id.clone()) {
-                out.push(offline_view(&t.id, &t.name, true));
+                out.push(offline_view(&t.id, &t.name, settings.is_trusted(&t.id), settings.is_favorite(&t.id)));
             }
         }
         for s in summaries {
@@ -462,7 +516,7 @@ impl Node {
                 .map(|m| m.from_name.clone())
                 .unwrap_or_else(|| short_code(&s.conversation));
             seen.insert(s.conversation.clone());
-            out.push(offline_view(&s.conversation, &name, false));
+            out.push(offline_view(&s.conversation, &name, false, false));
         }
         out.sort_by(|a, b| {
             b.online
@@ -511,6 +565,71 @@ impl Node {
         let m = msg.clone();
         self.spawn(async move { node.deliver(m).await });
         Ok(msg)
+    }
+
+    /// Removes messages here; with `for_everyone`, this device's own messages
+    /// among them are removed on the other side too (the general chat: on
+    /// the devices online now; a direct chat: now or when the device is back).
+    pub fn delete_messages(&self, conversation: &str, ids: Vec<String>, for_everyone: bool) -> Result<()> {
+        if !is_valid_conversation(conversation) {
+            bail!("invalid conversation");
+        }
+        let wanted: HashSet<String> = ids.into_iter().take(MAX_DELETE).collect();
+        let own: Vec<String> = {
+            let chat = self.inner.chat.lock().unwrap();
+            chat.history(conversation).into_iter().filter(|m| m.outgoing && wanted.contains(&m.id)).map(|m| m.id).collect()
+        };
+        let removed = self.inner.chat.lock().unwrap().remove(conversation, &wanted, None);
+        if !removed.is_empty() {
+            self.emit(Event::ChatDeleted { conversation: conversation.to_owned(), ids: removed });
+        }
+        if for_everyone && !own.is_empty() {
+            let general = conversation == GENERAL;
+            let targets: Vec<String> = if general {
+                self.peers().into_iter().filter(|p| p.online).map(|p| p.id).collect()
+            } else {
+                vec![conversation.to_owned()]
+            };
+            for peer in targets {
+                let node = self.clone();
+                let ids = own.clone();
+                self.spawn(async move { node.send_delete(&peer, ids, general).await });
+            }
+        }
+        Ok(())
+    }
+
+    /// Removes a whole conversation on this device.
+    pub fn clear_chat(&self, conversation: &str) -> Result<()> {
+        if !is_valid_conversation(conversation) {
+            bail!("invalid conversation");
+        }
+        let removed = self.inner.chat.lock().unwrap().clear(conversation);
+        self.emit(Event::ChatDeleted { conversation: conversation.to_owned(), ids: removed });
+        self.refresh_presence();
+        Ok(())
+    }
+
+    /// Delivers a deletion; a direct chat's waits for the device if needed.
+    async fn send_delete(&self, peer: &str, ids: Vec<String>, general: bool) {
+        // Any answer counts: an older version that does not know deletions
+        // will never accept one.
+        if let Err(e) = self.request(peer, &Request::ChatDelete { ids: ids.clone(), general }).await {
+            tracing::debug!("chat deletion to {peer}: {e}");
+            if !general {
+                self.inner.chat.lock().unwrap().queue_delete(peer, &ids);
+            }
+        }
+    }
+
+    fn on_chat_delete(&self, peer: &str, ids: Vec<String>, general: bool) {
+        let conversation = if general { GENERAL } else { peer };
+        let ids: HashSet<String> = ids.into_iter().take(MAX_DELETE).collect();
+        let removed = self.inner.chat.lock().unwrap().remove(conversation, &ids, Some(peer));
+        if !removed.is_empty() {
+            self.emit(Event::ChatDeleted { conversation: conversation.to_owned(), ids: removed });
+            self.refresh_presence();
+        }
     }
 
     pub fn retry_chat(&self, conversation: &str, id: &str) -> Result<()> {
@@ -585,6 +704,12 @@ impl Node {
     }
 
     fn flush_undelivered(&self, peer: &str) {
+        let deletes = self.inner.chat.lock().unwrap().take_deletes(peer);
+        if !deletes.is_empty() {
+            let node = self.clone();
+            let peer = peer.to_owned();
+            self.spawn(async move { node.send_delete(&peer, deletes, false).await });
+        }
         let pending = self.inner.chat.lock().unwrap().undelivered(peer);
         for msg in pending {
             let node = self.clone();
@@ -707,6 +832,7 @@ impl Node {
         let costly = matches!(
             request,
             Request::Chat(_)
+                | Request::ChatDelete { .. }
                 | Request::Offer(_)
                 | Request::Change(_)
                 | Request::ScreenAsk { .. }
@@ -725,6 +851,10 @@ impl Node {
             }
             Request::Chat(wire) => {
                 self.on_chat(peer, wire);
+                Response::Ok
+            }
+            Request::ChatDelete { ids, general } => {
+                self.on_chat_delete(peer, ids, general);
                 Response::Ok
             }
             Request::Offer(wire) => self.on_offer(peer, wire),
@@ -934,13 +1064,101 @@ impl Node {
         }
     }
 
+    // ---- invites and temporary codes ---------------------------------
+
+    /// Shows a new temporary code for [`CODE_TTL`](pairing::CODE_TTL).
+    /// Returns the code and when it expires (Unix ms).
+    pub fn start_pairing_code(&self) -> (String, i64) {
+        let code = pairing::new_code();
+        *self.inner.pairing.lock().unwrap() = Some((code.clone(), Instant::now() + pairing::CODE_TTL));
+        (code, now_ms() + pairing::CODE_TTL.as_millis() as i64)
+    }
+
+    pub fn stop_pairing_code(&self) {
+        *self.inner.pairing.lock().unwrap() = None;
+    }
+
+    async fn answer_code(&self, sock: &UdpSocket, query: &CodeQuery, src: SocketAddr) {
+        let code = match &*self.inner.pairing.lock().unwrap() {
+            Some((code, until)) if Instant::now() < *until && query.matches(code) => code.clone(),
+            _ => return,
+        };
+        let reply = query.reply(&code, &self.inner.identity.id, &self.my_name(), self.inner.port);
+        if let Ok(bytes) = serde_json::to_vec(&reply) {
+            let _ = sock.send_to(&bytes, src).await;
+        }
+    }
+
+    /// Connects to the device an invite (QR code) describes. Its key is
+    /// pinned, so only that device can answer.
+    pub async fn connect_invite(&self, link: &str) -> Result<PeerView> {
+        let invite = pairing::parse_invite(link).ok_or_else(|| anyhow!("this is not a Ropeway code"))?;
+        if invite.id == self.inner.identity.id {
+            bail!("this is the code of this device");
+        }
+        let mut last = anyhow!("the device did not answer");
+        for ip in &invite.addrs {
+            let addr = SocketAddr::new(IpAddr::V4(*ip), invite.port);
+            match self.dial(addr, Some(&invite.id)).await {
+                Ok(_) => return self.remember_connected(&invite.id, addr),
+                Err(e) => last = e,
+            }
+        }
+        Err(last)
+    }
+
+    /// Finds the device showing `code` on this network and connects to it.
+    pub async fn connect_code(&self, code: &str) -> Result<PeerView> {
+        let code = pairing::normalize_code(code).ok_or_else(|| anyhow!("the code has six digits"))?;
+        let query = CodeQuery::new(&code);
+        let bytes = serde_json::to_vec(&query)?;
+        let sock = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, 0)).await?;
+        sock.set_broadcast(true)?;
+        let mut targets = discovery::broadcast_targets_on(self.inner.discovery_port);
+        // Another copy on this computer.
+        targets.push(SocketAddr::from((Ipv4Addr::LOCALHOST, self.inner.discovery_port)));
+        let deadline = Instant::now() + Duration::from_secs(5);
+        let mut buf = vec![0u8; 2048];
+        while Instant::now() < deadline {
+            for t in &targets {
+                let _ = sock.send_to(&bytes, *t).await;
+            }
+            let round = Instant::now() + Duration::from_millis(700);
+            while let Ok(Ok((n, src))) = tokio::time::timeout(round.saturating_duration_since(Instant::now()), sock.recv_from(&mut buf)).await {
+                let Some(reply) = CodeReply::parse(&buf[..n]) else { continue };
+                if !reply.answers(&query, &code) || reply.id == self.inner.identity.id {
+                    continue;
+                }
+                let addr = SocketAddr::new(src.ip(), reply.port);
+                if self.dial(addr, Some(&reply.id)).await.is_ok() {
+                    return self.remember_connected(&reply.id, addr);
+                }
+            }
+        }
+        bail!("no device on this network shows this code")
+    }
+
+    /// After a connection by invite or code: the address is remembered like
+    /// one added by hand, so the devices find each other again.
+    fn remember_connected(&self, id: &str, addr: SocketAddr) -> Result<PeerView> {
+        let normalized = addr.to_string();
+        self.update_settings(|s| {
+            if !s.manual_peers.contains(&normalized) {
+                s.manual_peers.push(normalized);
+            }
+        })?;
+        self.refresh_presence();
+        debug_assert!(is_valid_id(id));
+        self.peers().into_iter().find(|p| p.id == id).ok_or_else(|| anyhow!("device disappeared"))
+    }
+
     // ---- discovery and presence ---------------------------------------
 
     async fn announce_loop(self, sock: Arc<UdpSocket>) {
         loop {
             let announce = Announce::new(&self.inner.identity.id, &self.my_name(), self.inner.port);
-            if let Ok(bytes) = serde_json::to_vec(&announce) {
-                for target in discovery::broadcast_targets() {
+            if let (true, Ok(bytes)) = (self.settings().discoverable, serde_json::to_vec(&announce)) {
+                for target in discovery::broadcast_targets_on(self.inner.discovery_port) {
                     let _ = sock.send_to(&bytes, target).await;
                 }
             }
@@ -960,8 +1178,13 @@ impl Node {
                 tokio::time::sleep(Duration::from_millis(50)).await;
                 continue;
             };
+            if let Some(query) = CodeQuery::parse(&buf[..n]) {
+                self.answer_code(&sock, &query, src).await;
+                continue;
+            }
             let Some(announce) = Announce::parse(&buf[..n]) else { continue };
-            if announce.id == self.inner.identity.id {
+            // Hidden: neither seen nor seeing others.
+            if announce.id == self.inner.identity.id || !self.settings().discoverable {
                 continue;
             }
             // An announcement is unauthenticated. While a verified connection
@@ -997,7 +1220,7 @@ impl Node {
                 // Answer directly so the newcomer sees us without waiting.
                 let reply = Announce::new(&self.inner.identity.id, &self.my_name(), self.inner.port);
                 if let Ok(bytes) = serde_json::to_vec(&reply) {
-                    let _ = sock.send_to(&bytes, SocketAddr::new(src.ip(), DISCOVERY_PORT)).await;
+                    let _ = sock.send_to(&bytes, SocketAddr::new(src.ip(), self.inner.discovery_port)).await;
                 }
                 self.refresh_presence();
             }
@@ -1103,7 +1326,7 @@ impl Node {
     }
 }
 
-fn offline_view(id: &str, name: &str, trusted: bool) -> PeerView {
+fn offline_view(id: &str, name: &str, trusted: bool, favorite: bool) -> PeerView {
     PeerView {
         id: id.to_owned(),
         name: name.to_owned(),
@@ -1111,6 +1334,7 @@ fn offline_view(id: &str, name: &str, trusted: bool) -> PeerView {
         address: None,
         online: false,
         trusted,
+        favorite,
         code: short_code(id),
     }
 }

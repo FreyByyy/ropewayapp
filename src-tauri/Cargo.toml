@@ -22,6 +22,8 @@ tauri-plugin-opener = "2"
 tauri-plugin-notification = "2"
 tokio = { version = "1", features = ["sync"] }
 tracing = "0.1"
+# Invite QR codes; the UI draws them.
+qrcode = { version = "0.14", default-features = false }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [target.'cfg(windows)'.dependencies]
@@ -42,6 +44,9 @@ ring = "0.17"
 tokio = { version = "1", features = ["rt-multi-thread", "net", "io-util", "macros", "signal", "sync"] }
 
 # Android: the Kotlin side (screen capture, files, network) is reached over JNI.
+[target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
+tauri-plugin-barcode-scanner = "2"
+
 [target.'cfg(target_os = "android")'.dependencies]
 anyhow = "1"
 jni = "0.21"

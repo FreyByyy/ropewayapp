@@ -211,6 +211,36 @@ export const IconSmile = make(
   </>,
 );
 
+export const IconStar = make("star", <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3Z" />);
+export const IconQr = make(
+  "qr",
+  <>
+    <rect x="4" y="4" width="6" height="6" rx="1" />
+    <rect x="14" y="4" width="6" height="6" rx="1" />
+    <rect x="4" y="14" width="6" height="6" rx="1" />
+    <path d="M14 14h2v2h-2zM18 14h2M14 18v2M17 17h3v3" />
+  </>,
+);
+export const IconScan = make(
+  "scan",
+  <>
+    <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" />
+    <circle cx="12" cy="12" r="3.5" />
+  </>,
+);
+export const IconGithub = make(
+  "github",
+  <path d="M9 19c-4 1.5-4-2-6-2.5m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21" />,
+);
+export const IconDevices = make(
+  "devices",
+  <>
+    <rect x="2" y="5" width="14" height="10" rx="1.5" />
+    <path d="M5 19h8M9 15v4" />
+    <rect x="17" y="9" width="5" height="10" rx="1" />
+  </>,
+);
+
 /** The Ropeway mark: three stations joined by a cable. Takes the text color,
  *  with the top station in the brand teal. */
 export function Logo({ size = 28 }: { size?: number }) {

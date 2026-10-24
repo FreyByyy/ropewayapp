@@ -13,6 +13,22 @@ use screencapturekit::prelude::*;
 use crate::frames::{encode_loop, Slot};
 use crate::SourceInfo;
 
+#[link(name = "CoreGraphics", kind = "framework")]
+extern "C" {
+    fn CGPreflightScreenCaptureAccess() -> bool;
+    fn CGRequestScreenCaptureAccess() -> bool;
+}
+
+/// Whether macOS lets Ropeway record the screen. The first time it shows the
+/// system prompt; afterwards only System Settings can change the answer, and
+/// macOS applies it after Ropeway restarts.
+pub fn screen_recording_allowed() -> bool {
+    unsafe { CGPreflightScreenCaptureAccess() || CGRequestScreenCaptureAccess() }
+}
+
+/// The error text the UI recognises and explains (System Settings, restart).
+const NO_PERMISSION: &str = "screen recording is not allowed";
+
 struct Output {
     slot: Arc<Slot>,
 }
@@ -46,7 +62,10 @@ impl VideoPipeline {
     pub fn start(source: Option<&CaptureSource>, sink: BroadcastSink, audio: bool, video: VideoSettings, _control: bool) -> Result<Self> {
         let video = video.clamped();
         let slot = Arc::new(Slot::new(video.fps));
-        let content = SCShareableContent::get().map_err(|e| anyhow!("screen recording is not allowed ({e:?})"))?;
+        if !screen_recording_allowed() {
+            return Err(anyhow!(NO_PERMISSION));
+        }
+        let content = SCShareableContent::get().map_err(|e| anyhow!("{NO_PERMISSION} ({e:?})"))?;
         let displays = content.displays();
         let wanted = resolve_monitor(source).map(|id| id as u32);
         let display = displays

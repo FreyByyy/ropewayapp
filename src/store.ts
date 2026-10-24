@@ -49,6 +49,8 @@ type Action =
   | { type: "settings"; settings: Settings }
   | { type: "folders"; folders: Folders }
   | { type: "chat"; msg: ChatMessage; active: string | null }
+  | { type: "chatDeleted"; conversation: string; ids: string[] }
+  | { type: "last"; last: Record<string, ChatMessage> }
   | { type: "history"; conversation: string; messages: ChatMessage[] }
   | { type: "read"; conversation: string }
   | { type: "transfer"; transfer: TransferView }
@@ -123,6 +125,25 @@ function reducer(state: State, action: Action): State {
         unread: countUnread ? { ...state.unread, [conv]: (state.unread[conv] ?? 0) + 1 } : state.unread,
       };
     }
+    case "chatDeleted": {
+      const gone = new Set(action.ids);
+      const loaded = state.messages[action.conversation];
+      const kept = loaded?.filter((m) => !gone.has(m.id));
+      const prevLast = state.last[action.conversation];
+      const last = { ...state.last };
+      if (prevLast && gone.has(prevLast.id)) {
+        const next = kept?.[kept.length - 1];
+        if (next) last[action.conversation] = next;
+        else delete last[action.conversation];
+      }
+      return {
+        ...state,
+        messages: kept ? { ...state.messages, [action.conversation]: kept } : state.messages,
+        last,
+      };
+    }
+    case "last":
+      return { ...state, last: action.last };
     case "history":
       return { ...state, messages: { ...state.messages, [action.conversation]: action.messages } };
     case "read":
@@ -160,6 +181,15 @@ export function useRopeway(active: string | null) {
             break;
           case "chat":
             dispatch({ type: "chat", msg: payload.data, active: activeRef.current });
+            break;
+          case "chat_deleted":
+            dispatch({ type: "chatDeleted", conversation: payload.data.conversation, ids: payload.data.ids });
+            // The last message of a conversation not open here comes from the core.
+            api.conversations().then((list) => {
+              const last: Record<string, ChatMessage> = {};
+              for (const c of list) if (c.last) last[c.conversation] = c.last;
+              dispatch({ type: "last", last });
+            });
             break;
           case "transfer":
             dispatch({ type: "transfer", transfer: payload.data });

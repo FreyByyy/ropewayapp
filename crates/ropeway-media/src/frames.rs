@@ -25,7 +25,7 @@ pub struct RawFrame {
 pub struct Slot {
     /// Time between captured frames.
     pub interval: Duration,
-    frame: Mutex<Option<RawFrame>>,
+    pub(crate) frame: Mutex<Option<RawFrame>>,
     ready: Condvar,
     pub stop: AtomicBool,
     /// The capture source went away (window closed, portal session ended).

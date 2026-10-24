@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { api, type PeerView } from "../api";
 import { useI18n } from "../i18n";
 import { IconAlert, IconX } from "../icons";
@@ -82,52 +82,6 @@ export function TrustModal({
         </button>
         <button className={`btn ${trusting ? "primary" : "danger"}`} onClick={confirm} disabled={busy}>
           {trusting ? t("trust") : t("untrust")}
-        </button>
-      </div>
-    </Modal>
-  );
-}
-
-export function AddIpModal({ onClose, onConnected }: { onClose: () => void; onConnected: (peer: PeerView) => void }) {
-  const { t } = useI18n();
-  const [address, setAddress] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const input = useRef<HTMLInputElement>(null);
-
-  useEffect(() => input.current?.focus(), []);
-
-  const connect = async () => {
-    if (!address.trim()) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const peer = await api.connectAddress(address.trim());
-      onConnected(peer);
-    } catch (e) {
-      setError(String(e));
-      setBusy(false);
-    }
-  };
-
-  return (
-    <Modal title={t("ipTitle")} onClose={onClose}>
-      <p className="modal-text">{t("ipBody")}</p>
-      <input
-        ref={input}
-        className="wide-input mono"
-        value={address}
-        placeholder={t("ipPlaceholder")}
-        onChange={(e) => setAddress(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && connect()}
-      />
-      {error && <div className="form-error">{error}</div>}
-      <div className="modal-actions">
-        <button className="btn ghost" onClick={onClose}>
-          {t("cancel")}
-        </button>
-        <button className="btn primary" onClick={connect} disabled={busy || !address.trim()}>
-          {busy ? t("connecting") : t("connect")}
         </button>
       </div>
     </Modal>

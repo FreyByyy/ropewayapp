@@ -161,6 +161,31 @@
         "id": "mtbYdY57rolj",
         "name": "happy",
         "platform": "fluent-systems-regular"
+      },
+      "star": {
+        "id": "tAfqdu2AVpjT",
+        "name": "star",
+        "platform": "fluent-systems-regular"
+      },
+      "qr": {
+        "id": "eVzJ4kKqXKDy",
+        "name": "qr-code",
+        "platform": "fluent-systems-regular"
+      },
+      "scan": {
+        "id": "OWXzR0yXpW0d",
+        "name": "camera--v2",
+        "platform": "fluent-systems-regular"
+      },
+      "github": {
+        "id": "zuHqpgzrusU5",
+        "name": "github",
+        "platform": "fluent-systems-regular"
+      },
+      "devices": {
+        "id": "gwCmus5W03wM",
+        "name": "multiple-devices",
+        "platform": "fluent-systems-regular"
       }
     },
     "material": {
@@ -322,6 +347,31 @@
       "smile": {
         "id": "95335",
         "name": "smiling",
+        "platform": "m_rounded"
+      },
+      "star": {
+        "id": "AsxZvu7XNv6y",
+        "name": "star--v2",
+        "platform": "m_rounded"
+      },
+      "qr": {
+        "id": "85970",
+        "name": "qr-code",
+        "platform": "m_rounded"
+      },
+      "scan": {
+        "id": "uP8rlYLVC3Xm",
+        "name": "apple-camera",
+        "platform": "m_rounded"
+      },
+      "github": {
+        "id": "106567",
+        "name": "github",
+        "platform": "m_rounded"
+      },
+      "devices": {
+        "id": "87559",
+        "name": "multiple-devices",
         "platform": "m_rounded"
       }
     },
@@ -485,6 +535,26 @@
         "id": "SYEe4jYlLqta",
         "name": "smiling",
         "platform": "puffy"
+      },
+      "star": {
+        "id": "g0YrFYUO2fCr",
+        "name": "star",
+        "platform": "puffy"
+      },
+      "qr": {
+        "id": "6K5EGcXNXGBj",
+        "name": "qr-code",
+        "platform": "puffy"
+      },
+      "scan": {
+        "id": "bMP7yA8AgY1D",
+        "name": "camera",
+        "platform": "puffy"
+      },
+      "devices": {
+        "id": "UTOhjroZqvrA",
+        "name": "multiple-devices",
+        "platform": "puffy"
       }
     },
     "glass": {
@@ -647,6 +717,31 @@
         "id": "KjUSB7J6ty47",
         "name": "happy",
         "platform": "sf-regular"
+      },
+      "star": {
+        "id": "EZ5j1vem6LAO",
+        "name": "star",
+        "platform": "sf-regular"
+      },
+      "qr": {
+        "id": "SfOns44TD1X7",
+        "name": "qr-code",
+        "platform": "sf-regular"
+      },
+      "scan": {
+        "id": "gyNdJe5wuFjx",
+        "name": "camera",
+        "platform": "sf-regular"
+      },
+      "github": {
+        "id": "WCL5hPLvhUjQ",
+        "name": "github",
+        "platform": "sf-regular"
+      },
+      "devices": {
+        "id": "QA7U2ynTb6ci",
+        "name": "multiple-smartphones",
+        "platform": "sf-regular"
       }
     },
     "retro": {
@@ -808,6 +903,26 @@
       "send": {
         "id": "ZYyrrpLqriXB",
         "name": null,
+        "platform": "retro"
+      },
+      "star": {
+        "id": "y6jdYYEUDu7D",
+        "name": "star",
+        "platform": "retro"
+      },
+      "qr": {
+        "id": "vjYjmSIKPRU0",
+        "name": "qr-code",
+        "platform": "retro"
+      },
+      "scan": {
+        "id": "x7QN9qWSUfdE",
+        "name": "camera",
+        "platform": "retro"
+      },
+      "devices": {
+        "id": "jly2LsyHAqdw",
+        "name": "multiple-devices",
         "platform": "retro"
       }
     }

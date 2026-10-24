@@ -12,6 +12,7 @@ mod daemon;
 mod ipc;
 mod notify;
 mod files;
+mod pairing;
 mod screen;
 mod update;
 
@@ -33,9 +34,9 @@ use tokio::sync::broadcast::error::RecvError;
 #[cfg(desktop)]
 const MINIMIZED_ARG: &str = "--minimized";
 
-type CmdResult<T> = Result<T, String>;
+pub(crate) type CmdResult<T> = Result<T, String>;
 
-fn err(e: impl std::fmt::Display) -> String {
+pub(crate) fn err(e: impl std::fmt::Display) -> String {
     e.to_string()
 }
 
@@ -143,6 +144,11 @@ pub fn run() {
 
     #[allow(unused_mut)]
     let mut builder = tauri::Builder::default();
+    // Phones scan QR codes of other devices with the camera.
+    #[cfg(mobile)]
+    {
+        builder = builder.plugin(tauri_plugin_barcode_scanner::init());
+    }
     #[cfg(desktop)]
     {
         if custom_data_dir.is_none() {
@@ -295,7 +301,18 @@ pub fn run() {
             appearance::set_appearance,
             appearance::windows_accent,
             appearance::set_backdrop,
+            appearance::mica_supported,
             appearance::set_system_bars,
+            pairing::invite_qr,
+            pairing::start_pairing_code,
+            pairing::stop_pairing_code,
+            pairing::connect_invite,
+            pairing::connect_code,
+            pairing::set_favorite,
+            pairing::set_discoverable,
+            pairing::delete_messages,
+            pairing::clear_chat,
+            update::open_project_page,
             update::check_update,
             update::open_releases_page,
             update::install_update,

@@ -44,12 +44,12 @@ impl Announce {
 
 /// Binds the shared discovery port. `SO_REUSEADDR` lets several instances on
 /// one machine (e.g. while testing) all receive the broadcasts.
-pub fn bind() -> Result<UdpSocket> {
+pub fn bind(port: u16) -> Result<UdpSocket> {
     let socket = Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::UDP))?;
     socket.set_reuse_address(true)?;
     socket.set_broadcast(true)?;
     socket.set_nonblocking(true)?;
-    let addr = SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, DISCOVERY_PORT);
+    let addr = SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, port);
     socket.bind(&addr.into())?;
     Ok(UdpSocket::from_std(socket.into())?)
 }
@@ -57,14 +57,18 @@ pub fn bind() -> Result<UdpSocket> {
 /// Limited broadcast plus the directed broadcast address of every IPv4
 /// interface (some adapters drop 255.255.255.255).
 pub fn broadcast_targets() -> Vec<SocketAddr> {
-    let mut targets = vec![SocketAddr::from((Ipv4Addr::BROADCAST, DISCOVERY_PORT))];
+    broadcast_targets_on(DISCOVERY_PORT)
+}
+
+pub fn broadcast_targets_on(port: u16) -> Vec<SocketAddr> {
+    let mut targets = vec![SocketAddr::from((Ipv4Addr::BROADCAST, port))];
     for iface in if_addrs::get_if_addrs().unwrap_or_default() {
         if iface.is_loopback() {
             continue;
         }
         if let if_addrs::IfAddr::V4(v4) = iface.addr {
             if let Some(b) = v4.broadcast {
-                let t = SocketAddr::from((b, DISCOVERY_PORT));
+                let t = SocketAddr::from((b, port));
                 if !targets.contains(&t) {
                     targets.push(t);
                 }

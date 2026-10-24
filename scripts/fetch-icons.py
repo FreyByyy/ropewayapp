@@ -59,6 +59,11 @@ ICONS = {
     "speaker": "speaker",
     "mute": "mute",
     "smile": "smiling",
+    "star": "star",
+    "qr": "qr code",
+    "scan": "camera",
+    "github": "github",
+    "devices": "multiple devices",
 }
 
 # (set, name) -> search term for one style.

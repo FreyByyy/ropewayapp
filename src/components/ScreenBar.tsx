@@ -4,13 +4,15 @@ import { Modal } from "./Modals";
 import { useI18n } from "../i18n";
 import { IconCast } from "../icons";
 import { IS_MOBILE } from "../platform";
+import { explainError } from "../errors";
 
 /** Live screen sharing state, shown above every view of the main window. */
 export function ScreenBar({ screen, peers }: { screen: ScreenView; peers: PeerView[] }) {
   const { t } = useI18n();
   const [needControl, setNeedControl] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
   const run = (f: () => Promise<unknown>) => () => {
-    f().catch(console.error);
+    f().catch((e) => setFailure(explainError(e, t)));
   };
   const nameOf = (id: string) => peers.find((p) => p.id === id)?.name ?? id.slice(0, 8);
 
@@ -20,6 +22,16 @@ export function ScreenBar({ screen, peers }: { screen: ScreenView; peers: PeerVi
 
   return (
     <>
+    {failure && (
+      <Modal title={t("screenErrorTitle")} onClose={() => setFailure(null)}>
+        <p className="modal-text pre-line">{failure}</p>
+        <div className="modal-actions">
+          <button className="btn primary" onClick={() => setFailure(null)}>
+            OK
+          </button>
+        </div>
+      </Modal>
+    )}
     {needControl && (
       <Modal title={t("controlSetupTitle")} onClose={() => setNeedControl(false)}>
         <p className="modal-text">{t("controlSetupText")}</p>

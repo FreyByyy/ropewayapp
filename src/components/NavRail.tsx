@@ -1,32 +1,37 @@
 import type { ReactNode } from "react";
 import { useI18n } from "../i18n";
-import { IconChat, IconFolder, IconPlus, IconSettings } from "../icons";
+import { IconChat, IconDevices, IconFolder, IconPlus, IconSettings } from "../icons";
+import type { Section } from "./Sidebar";
 
-export type RailSection = "chats" | "shared" | "settings";
+export type RailSection = Section;
 
 /** Material navigation rail: destinations with a tonal pill on the active one. */
 export function NavRail({
   section,
   unread,
+  offers,
   requests,
   onSelect,
-  onAddIp,
+  onAdd,
 }: {
   section: RailSection;
   unread: number;
+  /** Incoming file offers waiting for a decision. */
+  offers: number;
   requests: number;
   onSelect: (s: RailSection) => void;
-  onAddIp: () => void;
+  onAdd: () => void;
 }) {
   const { t } = useI18n();
   const items: { id: RailSection; label: string; icon: ReactNode; badge: number }[] = [
+    { id: "devices", label: t("devices"), icon: <IconDevices size={22} />, badge: offers },
     { id: "chats", label: t("chats"), icon: <IconChat size={22} />, badge: unread },
     { id: "shared", label: t("sharedFolder"), icon: <IconFolder size={22} />, badge: requests },
     { id: "settings", label: t("settings"), icon: <IconSettings size={22} />, badge: 0 },
   ];
   return (
     <nav className="rail" aria-label="Ropeway">
-      <button className="rail-fab" onClick={onAddIp} title={t("addByIp")} aria-label={t("addByIp")}>
+      <button className="rail-fab" onClick={onAdd} title={t("addDevice")} aria-label={t("addDevice")}>
         <IconPlus size={22} />
       </button>
       <div className="rail-items">

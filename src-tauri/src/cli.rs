@@ -15,7 +15,7 @@ use crate::ipc::{read_endpoint, Endpoint};
 const COMMANDS: &[&str] = &[
     "help", "--help", "-h", "status", "peers", "devices", "send", "msg", "chat", "watch", "files", "transfers",
     "accept", "reject", "cancel", "shared", "changes", "approve", "deny", "name", "trust", "untrust", "trusted",
-    "folders", "connect", "daemon", "quit", "version", "--version",
+    "folders", "connect", "code", "visible", "daemon", "quit", "version", "--version",
 ];
 
 pub fn is_cli(args: &[String]) -> bool {
@@ -331,9 +331,40 @@ impl<'a> Client<'a> {
             }
             "folders" => self.folders(rest)?,
             "connect" => {
-                let address = rest.first().ok_or_else(|| usage(self.ui, "connect <ip[:порт]>", "connect <ip[:port]>"))?;
+                let address = rest
+                    .first()
+                    .ok_or_else(|| usage(self.ui, "connect <ip[:порт] | код | ссылка>", "connect <ip[:port] | code | link>"))?;
                 let p = self.call("connect", json!({ "address": address }))?;
-                println!("{} {}", t("Подключено:", "Connected:"), p["name"].as_str().unwrap_or(""));
+                println!("{} {} ({})", t("Подключено:", "Connected:"), p["name"].as_str().unwrap_or(""), p["code"].as_str().unwrap_or(""));
+            }
+            "code" => {
+                let c = self.call("pairing_code", Value::Null)?;
+                let code = c["code"].as_str().unwrap_or("");
+                println!(
+                    "{} {} {}\n{}",
+                    t("Временный код:", "Temporary code:"),
+                    &code[..code.len().min(3)],
+                    &code[code.len().min(3)..],
+                    t(
+                        "Введите его на другом устройстве в этой сети: «Добавить устройство → Ввести код» или ropeway connect <код>. Код работает 10 минут.",
+                        "Enter it on another device on this network: \"Add device → Enter code\" or ropeway connect <code>. The code works for 10 minutes."
+                    )
+                );
+            }
+            "visible" => {
+                let v = rest.first().ok_or_else(|| usage(self.ui, "visible on|off", "visible on|off"))?;
+                self.call("set_discoverable", json!({ "enabled": on(v) }))?;
+                println!(
+                    "{}",
+                    if on(v) {
+                        t("Устройство снова видно в сети.", "This device is visible on the network again.")
+                    } else {
+                        t(
+                            "Устройство скрыто: подключения только по IP, QR или коду.",
+                            "This device is hidden: connections only by IP, QR or code.",
+                        )
+                    }
+                );
             }
             "quit" => {
                 self.call("quit", Value::Null)?;
@@ -650,7 +681,9 @@ Ropeway — команды в терминале. Если приложение 
   ropeway trust|untrust <устройство>     отметить устройство доверенным или снять отметку
   ropeway trusted [--view-screen on|off] доверенные устройства; смотрят ли они экран без вопроса
   ropeway folders [--downloads ПАПКА] [--shared ПАПКА] [--sharing on|off] [--trusted-only on|off]
-  ropeway connect <ip[:порт]>            добавить компьютер по IP
+  ropeway connect <ip[:порт] | код>      добавить устройство по IP или временному коду
+  ropeway code                           показать временный код для другого устройства
+  ropeway visible on|off                 показывать это устройство в сети или скрыть
   ropeway daemon                         работать без окна (для серверов)
   ropeway quit                           остановить Ropeway
 
@@ -674,7 +707,9 @@ Ropeway terminal commands. If the app is not running, it starts in the backgroun
   ropeway trust|untrust <device>         mark a device trusted, or not
   ropeway trusted [--view-screen on|off] trusted devices; whether they watch the screen without asking
   ropeway folders [--downloads DIR] [--shared DIR] [--sharing on|off] [--trusted-only on|off]
-  ropeway connect <ip[:port]>            add a computer by IP
+  ropeway connect <ip[:port] | code>     add a device by IP or temporary code
+  ropeway code                           show a temporary code for another device
+  ropeway visible on|off                 show this device on the network, or hide it
   ropeway daemon                         run without a window (servers)
   ropeway quit                           stop Ropeway
 

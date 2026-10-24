@@ -31,6 +31,12 @@ pub struct Settings {
     /// Trusted devices may watch this screen without being asked each time.
     /// Control always asks.
     pub trusted_view_without_asking: bool,
+    /// Announce this device on the network and find others. Off: devices
+    /// connect only by address, invite (QR) or temporary code.
+    pub discoverable: bool,
+    /// Devices pinned to the top of the device page. Unlike trust, this
+    /// grants nothing.
+    pub favorites: Vec<TrustedDevice>,
     /// Video settings last used for screen sharing; also used when someone
     /// asks to see or control this screen.
     pub screen_video: crate::screen::VideoSettings,
@@ -52,6 +58,8 @@ impl Default for Settings {
             // Safe by default; the user can open the folder to everyone.
             shared_trusted_only: true,
             trusted_view_without_asking: false,
+            discoverable: true,
+            favorites: Vec::new(),
             screen_video: Default::default(),
             appearance: serde_json::Value::Null,
         }
@@ -72,6 +80,10 @@ impl Settings {
 
     pub fn is_trusted(&self, id: &str) -> bool {
         self.trusted.iter().any(|t| t.id == id)
+    }
+
+    pub fn is_favorite(&self, id: &str) -> bool {
+        self.favorites.iter().any(|t| t.id == id)
     }
 
     pub fn download_dir(&self) -> PathBuf {

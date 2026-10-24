@@ -101,6 +101,8 @@ pub enum ChangeOutcome {
 pub enum Request {
     Hello(Hello),
     Chat(ChatWire),
+    /// "Remove these messages I sent you" (`general`: in the general chat).
+    ChatDelete { ids: Vec<String>, general: bool },
     Offer(OfferWire),
     OfferAnswer { id: String, accepted: bool },
     TransferDone { id: String },

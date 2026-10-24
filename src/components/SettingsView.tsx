@@ -6,7 +6,7 @@ import { BackButton } from "./MobileNav";
 import { api, type Folders, type Language, type MeView, type PeerView, type Settings } from "../api";
 import { useI18n } from "../i18n";
 import type { Dispatch } from "../store";
-import { IconExternal } from "../icons";
+import { IconExternal, IconGithub } from "../icons";
 import { VideoFields } from "./VideoFields";
 import { AppearanceCard } from "./AppearanceCard";
 import type { AppearanceApi } from "../theme/useAppearance";
@@ -107,6 +107,7 @@ export function SettingsView({ me, settings, folders, peers, dispatch, onUntrust
         address: null,
         online: false,
         trusted: true,
+        favorite: settings.favorites.some((f) => f.id === tr.id),
         code: tr.id.slice(0, 12).toUpperCase().replace(/(.{4})(?=.)/g, "$1-"),
       },
   );
@@ -300,6 +301,27 @@ export function SettingsView({ me, settings, folders, peers, dispatch, onUntrust
         <UpdatesCard updates={updates} version={version} />
 
         <div className="card">
+          <span className="field-label">{t("visibility")}</span>
+          <div className="folder-row toggle-row">
+            <div className="folder-text">
+              <span className="folder-title">{t("discoverable")}</span>
+              <span className="field-hint">{t(settings.discoverable ? "discoverableOnHint" : "discoverableOffHint")}</span>
+            </div>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={settings.discoverable}
+                onChange={async (e) => {
+                  await api.setDiscoverable(e.target.checked);
+                  await reload();
+                }}
+              />
+              <span />
+            </label>
+          </div>
+        </div>
+
+        <div className="card">
           <span className="field-label">{t("network")}</span>
           <dl className="facts">
             <dt>{t("addresses")}</dt>
@@ -311,6 +333,16 @@ export function SettingsView({ me, settings, folders, peers, dispatch, onUntrust
             <dt>{t("about")}</dt>
             <dd>{t("iconsCredit")} — icons8.com</dd>
           </dl>
+          <div className="about-links">
+            <button className="btn ghost small" onClick={() => api.openProjectPage().catch(console.error)}>
+              <IconGithub size={16} />
+              <span>{t("sourceCode")}</span>
+            </button>
+            <button className="btn ghost small" onClick={() => api.openReleasesPage().catch(console.error)}>
+              <IconExternal size={15} />
+              <span>{t("updatesAll")}</span>
+            </button>
+          </div>
         </div>
 
         {error && <div className="form-error">{error}</div>}

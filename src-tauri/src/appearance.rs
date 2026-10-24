@@ -155,6 +155,25 @@ pub fn windows_accent() -> Option<String> {
     None
 }
 
+/// Whether the window can have the Mica backdrop: Windows 11 (build 22000)
+/// and newer. Windows 10 would leave a Mica theme's window transparent.
+#[tauri::command]
+pub fn mica_supported() -> bool {
+    #[cfg(windows)]
+    {
+        use winreg::enums::HKEY_LOCAL_MACHINE;
+        let build = winreg::RegKey::predef(HKEY_LOCAL_MACHINE)
+            .open_subkey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion")
+            .and_then(|k| k.get_value::<String, _>("CurrentBuildNumber"))
+            .ok()
+            .and_then(|b| b.parse::<u32>().ok())
+            .unwrap_or(0);
+        build >= 22000
+    }
+    #[cfg(not(windows))]
+    false
+}
+
 /// Turns the Windows 11 Mica backdrop on or off for the calling window.
 /// On older systems the call has no visible effect.
 #[tauri::command]

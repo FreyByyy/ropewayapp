@@ -16,7 +16,9 @@ import {
   IconShield,
   IconShieldCheck,
   IconSmile,
+  IconTrash,
 } from "../icons";
+import { Modal } from "./Modals";
 import { Avatar } from "./Avatar";
 import { duplicateNames, isDuplicate, shortCode } from "../identity";
 import { EmojiPicker } from "./EmojiPicker";
@@ -33,12 +35,15 @@ interface Props {
   onTrust: (peer: PeerView) => void;
   /** Opens the "share screen" dialog, for one device or everyone. */
   onShareScreen: (peer?: PeerView) => void;
+  /** Opens the device's page. */
+  onOpenDevice?: (peer: PeerView) => void;
 }
 
 const GROUP_GAP_MS = 5 * 60 * 1000;
 
-export function ChatView({ conversation, peer, peers, messages, transfers, onTrust, onShareScreen }: Props) {
+export function ChatView({ conversation, peer, peers, messages, transfers, onTrust, onShareScreen, onOpenDevice }: Props) {
   const { t, lang } = useI18n();
+  const [clearing, setClearing] = useState(false);
   const isGeneral = conversation === GENERAL;
   const dupNames = duplicateNames(peers);
   const listRef = useRef<HTMLDivElement>(null);
@@ -76,13 +81,22 @@ export function ChatView({ conversation, peer, peers, messages, transfers, onTru
                 <IconCast size={17} />
                 <span>{t("showScreen")}</span>
               </button>
+              <button className="tool" onClick={() => setClearing(true)} title={t("clearChat")} disabled={!messages?.length}>
+                <IconTrash size={17} />
+              </button>
             </div>
           </>
         ) : peer ? (
           <>
-            <Avatar name={peer.name} id={peer.id} online={peer.online} size={40} />
+            <button className="head-link" onClick={() => onOpenDevice?.(peer)} title={t("devicePage")} disabled={!onOpenDevice}>
+              <Avatar name={peer.name} id={peer.id} online={peer.online} size={40} />
+            </button>
             <div className="head-text">
-              <h1>{peer.name}</h1>
+              <h1>
+                <button className="head-link" onClick={() => onOpenDevice?.(peer)} disabled={!onOpenDevice}>
+                  {peer.name}
+                </button>
+              </h1>
               <p>
                 <span className={peer.online ? "status-on" : "status-off"}>
                   {peer.online ? t("online") : t("offline")}
@@ -117,6 +131,9 @@ export function ChatView({ conversation, peer, peers, messages, transfers, onTru
                 {peer.trusted ? <IconShieldCheck size={17} /> : <IconShield size={17} />}
                 <span>{peer.trusted ? t("trusted") : t("trust")}</span>
               </button>
+              <button className="tool" onClick={() => setClearing(true)} title={t("clearChat")} disabled={!messages?.length}>
+                <IconTrash size={17} />
+              </button>
             </div>
           </>
         ) : null}
@@ -143,6 +160,25 @@ export function ChatView({ conversation, peer, peers, messages, transfers, onTru
       </div>
 
       {!isGeneral && peer && !peer.online && <div className="offline-note">{t("offlineNote")}</div>}
+      {clearing && (
+        <Modal title={t("clearChatTitle")} onClose={() => setClearing(false)}>
+          <p className="modal-text">{t("clearChatBody")}</p>
+          <div className="modal-actions">
+            <button className="btn ghost" onClick={() => setClearing(false)}>
+              {t("cancel")}
+            </button>
+            <button
+              className="btn danger"
+              onClick={() => {
+                setClearing(false);
+                api.clearChat(conversation).catch(console.error);
+              }}
+            >
+              {t("clear")}
+            </button>
+          </div>
+        </Modal>
+      )}
       <Composer conversation={conversation} placeholder={isGeneral ? t("generalPlaceholder") : t("messagePlaceholder")} />
     </section>
   );
@@ -167,6 +203,7 @@ function MessageList({
   t: Translate;
   lang: string;
 }) {
+  const [picked, setPicked] = useState<string | null>(null);
   const items: Item[] = [
     ...messages.map((msg): Item => ({ kind: "msg", ts: msg.ts, msg })),
     ...transfers.map((transfer): Item => ({ kind: "transfer", ts: transfer.created, transfer })),
@@ -208,6 +245,8 @@ function MessageList({
               }
               t={t}
               lang={lang}
+              picked={picked === m.id}
+              onPick={(on) => setPicked(on ? m.id : null)}
             />
           </Fragment>
         );
@@ -309,6 +348,8 @@ function Bubble({
   sender,
   t,
   lang,
+  picked,
+  onPick,
 }: {
   msg: ChatMessage;
   grouped: boolean;
@@ -316,10 +357,46 @@ function Bubble({
   sender: { trusted: boolean; duplicate: boolean } | null;
   t: Translate;
   lang: string;
+  /** The delete menu of this message is open (or, on a phone, it is tapped). */
+  picked: boolean;
+  onPick: (on: boolean) => void;
 }) {
   const time = new Date(msg.ts).toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" });
+  const remove = (forEveryone: boolean) => {
+    onPick(false);
+    api.deleteMessages(msg.conversation, [msg.id], forEveryone).catch(console.error);
+  };
+  const actions = (
+    <div className="msg-actions">
+      <button
+        className="msg-delete"
+        title={t("deleteMessage")}
+        aria-label={t("deleteMessage")}
+        onClick={(e) => {
+          e.stopPropagation();
+          // Others' messages are only removed here; one's own may go everywhere.
+          if (msg.outgoing) onPick(!picked);
+          else remove(false);
+        }}
+      >
+        <IconTrash size={15} />
+      </button>
+      {picked && msg.outgoing && (
+        <div className="menu msg-menu" onClick={(e) => e.stopPropagation()}>
+          <button onClick={() => remove(false)}>{t("deleteForMe")}</button>
+          <button className="danger-text" onClick={() => remove(true)}>
+            {t("deleteForEveryone")}
+          </button>
+        </div>
+      )}
+    </div>
+  );
   return (
-    <div className={`row ${msg.outgoing ? "out" : "in"} ${grouped ? "grouped" : ""}`}>
+    <div
+      className={`row ${msg.outgoing ? "out" : "in"} ${grouped ? "grouped" : ""} ${picked ? "picked" : ""}`}
+      onClick={IS_MOBILE ? () => onPick(!picked) : undefined}
+    >
+      {msg.outgoing && actions}
       <div className={`bubble ${msg.status === "failed" ? "failed" : ""}`}>
         {sender && (
           <div className="sender">
@@ -344,6 +421,7 @@ function Bubble({
           {t("retry")}
         </button>
       )}
+      {!msg.outgoing && actions}
     </div>
   );
 }

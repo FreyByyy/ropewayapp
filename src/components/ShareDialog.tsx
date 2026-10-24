@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, DEFAULT_VIDEO, type CaptureSource, type PeerView, type SourceInfo, type VideoSettings } from "../api";
 import { useI18n, type Translate } from "../i18n";
+import { explainError } from "../errors";
 import { IconMonitor } from "../icons";
 import { Avatar } from "./Avatar";
 import { Modal } from "./Modals";
@@ -46,7 +47,7 @@ export function ShareDialog({ peers, preselected, everyone, initialVideo, onClos
         setSources(list);
         setPicked(list.find((s) => s.kind === "monitor" && s.primary) ?? list[0] ?? null);
       })
-      .catch((e) => setError(String(e)));
+      .catch((e) => setError(explainError(e, t)));
   }, []);
 
   const toggle = (id: string) =>
@@ -79,7 +80,7 @@ export function ShareDialog({ peers, preselected, everyone, initialVideo, onClos
       );
       onClose();
     } catch (e) {
-      setError(String(e));
+      setError(explainError(e, t));
       setBusy(false);
     }
   };
@@ -152,7 +153,7 @@ export function ShareDialog({ peers, preselected, everyone, initialVideo, onClos
             ))}
         </div>
       </div>
-      {error && <div className="form-error">{error}</div>}
+      {error && <div className="form-error pre-line">{error}</div>}
       <div className="modal-actions">
         <button className="btn ghost" onClick={onClose}>
           {t("cancel")}

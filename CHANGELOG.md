@@ -3,6 +3,34 @@
 Ropeway показывает раздел своей версии после обновления. В заметках к
 выпуску на GitHub — тот же текст.
 
+## 0.7.0
+
+### Русский
+
+- Новая главная страница «Мои устройства»: избранные устройства сверху, с быстрыми кнопками — файлы, экран, управление, чат.
+- У каждого устройства своя страница: отправка файлов, трансляция экрана, управление компьютером, чат и все передачи файлов.
+- Чаты переехали в отдельную вкладку.
+- Добавить устройство можно по QR-коду (на телефоне — «Сканировать QR»), по временному коду из шести цифр или по IP.
+- Настройка «Автоматически отображать моё устройство»: если её выключить, устройство скрыто, и подключиться к нему можно только по IP, QR или коду.
+- Сообщения можно удалять — у себя или у всех, а чат — очищать.
+- Показ экрана работает на Windows 10, в том числе LTSC, и даёт понятную подсказку, если macOS не разрешает запись экрана.
+- Тема Fluent на Windows 10 больше не прозрачная, а переключение тем не двоится и не повторяется при повторном нажатии.
+- Ссылка на исходный код на GitHub в Настройках, обновлённый установщик для Windows.
+- В терминале: `ropeway code`, `ropeway visible on|off`, `ropeway connect <код>`.
+
+### English
+
+- A new start page, My devices: favourite devices at the top with quick buttons for files, screen, control and chat.
+- Every device has its own page: send files, share the screen, control the computer, chat, and all file transfers with it.
+- Chats moved to their own tab.
+- Add a device by QR code (Scan QR code on a phone), by a six-digit temporary code, or by IP address.
+- The "Show my device automatically" setting: turned off, the device is hidden and can only be connected by IP, QR or code.
+- Messages can be deleted, for you or for everyone, and chats cleared.
+- Screen sharing works on Windows 10, LTSC included, and explains what to do when macOS does not allow screen recording.
+- The Fluent theme is no longer see-through on Windows 10, and switching themes no longer doubles the picture or replays when the theme is already on.
+- A link to the source code on GitHub in Settings, and a refreshed Windows installer.
+- In the terminal: `ropeway code`, `ropeway visible on|off`, `ropeway connect <code>`.
+
 ## 0.6.1
 
 ### Русский

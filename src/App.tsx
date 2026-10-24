@@ -5,16 +5,19 @@ import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { api, GENERAL, type PeerView } from "./api";
 import { I18n, makeT } from "./i18n";
 import { pendingOffers, useRopeway } from "./store";
-import { Sidebar } from "./components/Sidebar";
+import { Sidebar, type Section } from "./components/Sidebar";
+import { DevicesView } from "./components/DevicesView";
+import { DeviceView } from "./components/DeviceView";
+import { AddDeviceModal } from "./components/AddDeviceModal";
 import { ChatView } from "./components/ChatView";
 import { SettingsView } from "./components/SettingsView";
 import { SharedView } from "./components/SharedView";
 import { ScreenBar } from "./components/ScreenBar";
 import { ShareDialog } from "./components/ShareDialog";
-import { AddIpModal, TrustModal } from "./components/Modals";
+import { TrustModal } from "./components/Modals";
 import { UpdateModal, WhatsNewModal } from "./components/UpdateModals";
 import { useUpdates } from "./updates";
-import { NavRail, type RailSection } from "./components/NavRail";
+import { NavRail } from "./components/NavRail";
 import { IconSetContext } from "./icons";
 import { useAppearance } from "./theme/useAppearance";
 import { ThemeInstallContext } from "./theme/install";
@@ -28,10 +31,15 @@ import { IS_MOBILE } from "./platform";
 
 const COMPACT_KEY = "ropeway.pane.compact";
 
-type View = { kind: "chat"; conversation: string } | { kind: "settings" } | { kind: "shared" };
+type View =
+  | { kind: "devices" }
+  | { kind: "device"; id: string }
+  | { kind: "chat"; conversation: string }
+  | { kind: "settings" }
+  | { kind: "shared" };
 type ModalState =
   | { kind: "trust"; peer: PeerView }
-  | { kind: "ip" }
+  | { kind: "add" }
   | { kind: "share"; preselected: string[]; everyone: boolean }
   | { kind: "install"; theme: ThemeDef }
   | { kind: "install-error" }
@@ -40,7 +48,7 @@ type ModalState =
 type ViewerTarget = { peer: string; session: string };
 
 export default function App() {
-  const [view, setView] = useState<View>({ kind: "chat", conversation: GENERAL });
+  const [view, setView] = useState<View>({ kind: "devices" });
   const [modal, setModal] = useState<ModalState>(null);
   // Phone: the list fills the screen until a chat or page is opened over it;
   // a screen being watched covers everything. Both are history entries, so
@@ -80,7 +88,9 @@ export default function App() {
 
   const [dragging, setDragging] = useState(false);
   const dropTarget = useRef<PeerView | undefined>(undefined);
-  const peerForDrop = active && active !== GENERAL ? state.peers.find((p) => p.id === active) : undefined;
+  // Files dropped on the window go to the device whose page or chat is open.
+  const dropId = view.kind === "device" ? view.id : active && active !== GENERAL ? active : null;
+  const peerForDrop = dropId ? state.peers.find((p) => p.id === dropId) : undefined;
   dropTarget.current = peerForDrop;
 
   // Files dragged from Explorer onto an open device chat are sent to it.
@@ -176,6 +186,15 @@ export default function App() {
     },
     [openView],
   );
+  const openDevice = useCallback((id: string) => openView({ kind: "device", id }), [openView]);
+  const openSection = useCallback(
+    (s: Section) => {
+      if (s === "chats") openChat(lastChat);
+      else if (s === "devices") openView({ kind: "devices" });
+      else openView({ kind: s });
+    },
+    [lastChat, openChat, openView],
+  );
 
   // A click on a system notification opens what it was about.
   useEffect(() => {
@@ -219,13 +238,17 @@ export default function App() {
   const requests = state.changes.filter((c) => c.direction === "incoming" && c.status === "pending").length;
   // Phones use one column whatever the theme's layout.
   const layout = IS_MOBILE ? "sidebar" : appearance.theme.layout;
-  const section: RailSection = view.kind === "chat" ? "chats" : view.kind;
-  const totalUnread =
-    Object.values(state.unread).reduce((a, b) => a + b, 0) + Object.values(offers).reduce((a, b) => a + b, 0);
-  const viewKey = view.kind === "chat" ? `chat:${view.conversation}` : view.kind;
+  const section: Section =
+    view.kind === "chat" ? "chats" : view.kind === "device" || view.kind === "devices" ? "devices" : view.kind;
+  const selected = view.kind === "device" ? view.id : view.kind === "chat" ? view.conversation : null;
+  const viewKey = view.kind === "chat" ? `chat:${view.conversation}` : view.kind === "device" ? `device:${view.id}` : view.kind;
   const peerTransfers = peer
     ? Object.values(state.transfers).filter((tr) => tr.peer === peer.id && tr.kind === "offer")
     : [];
+  const badges: Record<string, number> = {};
+  for (const p of state.peers) badges[p.id] = (state.unread[p.id] ?? 0) + (offers[p.id] ?? 0);
+  const devicePeer = view.kind === "device" ? state.peers.find((p) => p.id === view.id) : undefined;
+  const shareFor = (p?: PeerView) => setModal({ kind: "share", preselected: p ? [p.id] : [], everyone: !p });
 
   return (
     <I18n.Provider value={i18n}>
@@ -241,15 +264,14 @@ export default function App() {
         {layout === "rail" && (
           <NavRail
             section={section}
-            unread={totalUnread}
+            unread={Object.values(state.unread).reduce((a, b) => a + b, 0)}
+            offers={Object.values(offers).reduce((a, b) => a + b, 0)}
             requests={requests}
-            onAddIp={() => setModal({ kind: "ip" })}
-            onSelect={(s) =>
-              s === "chats" ? openChat(lastChat) : openView(s === "shared" ? { kind: "shared" } : { kind: "settings" })
-            }
+            onAdd={() => setModal({ kind: "add" })}
+            onSelect={openSection}
           />
         )}
-        {(layout !== "rail" || view.kind === "chat") && (
+        {(layout !== "rail" || section === "chats" || section === "devices") && (
         <Sidebar
           variant={layout === "rail" ? "list" : "full"}
           compact={layout === "navview" && compact}
@@ -260,13 +282,12 @@ export default function App() {
           unread={state.unread}
           offers={offers}
           requests={requests}
-          selected={IS_MOBILE ? null : active}
-          settingsOpen={!IS_MOBILE && view.kind === "settings"}
-          sharedOpen={!IS_MOBILE && view.kind === "shared"}
-          onSelect={openChat}
-          onShared={() => openView({ kind: "shared" })}
-          onSettings={() => openView({ kind: "settings" })}
-          onAddIp={() => setModal({ kind: "ip" })}
+          section={section}
+          selected={IS_MOBILE ? null : selected}
+          onSection={openSection}
+          onDevice={openDevice}
+          onChat={openChat}
+          onAdd={() => setModal({ kind: "add" })}
         />
         )}
         {/* Phone: above the list and the chat alike, so asks are always seen. */}
@@ -274,7 +295,30 @@ export default function App() {
         <main className="main">
           {!IS_MOBILE && <ScreenBar screen={state.screen} peers={state.peers} />}
           <div className="view" key={viewKey}>
-          {view.kind === "settings" ? (
+          {view.kind === "devices" ? (
+            <DevicesView
+              peers={state.peers}
+              badges={badges}
+              onOpen={(p) => openDevice(p.id)}
+              onChat={(p) => openChat(p.id)}
+              onShareScreen={shareFor}
+              onAdd={() => setModal({ kind: "add" })}
+            />
+          ) : view.kind === "device" ? (
+            devicePeer ? (
+              <DeviceView
+                peer={devicePeer}
+                peers={state.peers}
+                transfers={Object.values(state.transfers).filter((tr) => tr.peer === devicePeer.id)}
+                unread={state.unread[devicePeer.id] ?? 0}
+                onChat={() => openChat(devicePeer.id)}
+                onTrust={() => setModal({ kind: "trust", peer: devicePeer })}
+                onShareScreen={() => shareFor(devicePeer)}
+              />
+            ) : (
+              <div className="placeholder">{i18n.t("selectHint")}</div>
+            )
+          ) : view.kind === "settings" ? (
             <SettingsView
               me={state.me}
               settings={state.settings}
@@ -304,9 +348,8 @@ export default function App() {
               messages={state.messages[view.conversation]}
               transfers={peerTransfers}
               onTrust={(p) => setModal({ kind: "trust", peer: p })}
-              onShareScreen={(p) =>
-                setModal({ kind: "share", preselected: p ? [p.id] : [], everyone: !p })
-              }
+              onShareScreen={shareFor}
+              onOpenDevice={(p) => openDevice(p.id)}
             />
           ) : (
             <div className="placeholder">{i18n.t("selectHint")}</div>
@@ -351,12 +394,14 @@ export default function App() {
           onClose={closeModal}
         />
       )}
-      {modal?.kind === "ip" && (
-        <AddIpModal
+      {modal?.kind === "add" && (
+        <AddDeviceModal
+          peers={state.peers}
+          myCode={state.me.code}
           onClose={closeModal}
-          onConnected={(p) => {
+          onDone={(p) => {
             closeModal();
-            openChat(p.id);
+            openDevice(p.id);
           }}
         />
       )}

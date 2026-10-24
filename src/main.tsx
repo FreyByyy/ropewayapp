@@ -14,6 +14,7 @@ import "./themes/neu.css";
 import "./themes/glass.css";
 import "./themes/retro.css";
 import "./styles-emoji.css";
+import "./styles-devices.css";
 import "./styles-mobile.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
